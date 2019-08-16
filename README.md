@@ -72,14 +72,14 @@ set role to `aoscx-ansible-role`:
             ipv6: ['2000:db8::1234/32']
 ```
 
-If role installed through [Galaxy]()
-set role to `aoscx`:
+If role installed through [Galaxy](https://galaxy.ansible.com/arubanetworks/aoscx)
+set role to `arubanetworks.aoscx`:
 
 ```yaml
     ---
     -  hosts: all
        roles:
-        - role: aoscx
+        - role: arubanetworks.aoscx
        tasks:
          - name: Create L3 Interface 1/1/3
            aoscx_l3_interface:
