@@ -189,7 +189,7 @@ class L2_Interface:
             }
             aruba_ansible_module = port.update_port_fields(aruba_ansible_module, interface_name, port_fields)
         else:
-            aruba_ansible_module.module.fail_json(msg="Interface {} is currently an L3 interface".format(interface_name))
+            aruba_ansible_module.module.fail_json(msg="Interface {} is currently an L3 interface. Delete interface then configure as L2.".format(interface_name))
 
         return aruba_ansible_module
 
@@ -219,7 +219,7 @@ class L2_Interface:
         interface = L2_Interface()
 
         if not interface.check_if_l2_interface_possible(aruba_ansible_module, interface_name):
-            aruba_ansible_module.module.fail_json(msg="Interface {} is configured as an L3 interface\nDelete interface then configure as L2.".format(interface_name))
+            aruba_ansible_module.module.fail_json(msg="Interface {} is configured as an L3 interface. Delete interface then configure as L2.".format(interface_name))
         if not port.check_port_exists(aruba_ansible_module, interface_name):
             aruba_ansible_module.module.fail_json(msg="Interface {} is not configured".format(interface_name))
 
@@ -259,11 +259,11 @@ class L3_Interface:
             encoded_interface_name = interface_name.replace("/", "%2F")
             interfaces = [encoded_interface_name]
             port_fields = {
-                "interfaces" : interfaces
+                "interfaces": interfaces
             }
             aruba_ansible_module = port.update_port_fields(aruba_ansible_module, interface_name, port_fields)
         else:
-            aruba_ansible_module.module.fail_json("Interface {} is currently an L2 interface".format(interface_name))
+            aruba_ansible_module.module.fail_json("Interface {} is currently an L2 interface. Delete interface then configure as L3.".format(interface_name))
 
         return aruba_ansible_module
 
@@ -277,11 +277,12 @@ class L3_Interface:
     def check_if_l3_interface_possible(self, aruba_ansible_module, interface_name):
         port = Port()
         if port.check_port_exists(aruba_ansible_module, interface_name):
-            result = port.get_port_field_values(aruba_ansible_module, interface_name, ['vlan_tag', 'vrf'])
-            if result.has_key('vrf'):
+            result = port.get_port_field_values(aruba_ansible_module, interface_name, ['vrf', 'routing'])
+            if 'vrf' in result.keys():
                 return True
-            if result.has_key('vlan_tag'):
-                return False
+            if 'routing' in result.keys():
+                if result['routing'] is False:
+                    return False
             else:
                 return True
         else:
@@ -293,13 +294,22 @@ class L3_Interface:
         if not port.check_port_exists(aruba_ansible_module, interface_name):
             aruba_ansible_module.module.fail_json(msg="Interface {} is not configured".format(interface_name))
 
+        result = port.get_port_field_values(aruba_ansible_module,
+                                            interface_name,
+                                            ['vrf'])
+        if 'vrf' in result.keys():
+            if result['vrf'] != "" and result['vrf'] != vrf_name:
+                aruba_ansible_module.module.fail_json(
+                    msg=("Interface {} is attached to VRF {}. Delete interface and recreate with VRF {}".format(
+                        interface_name, result['vrf'], vrf_name)))
+
         if not vrf.check_vrf_exists(aruba_ansible_module, vrf_name):
             if vrf_name != "default":
                 aruba_ansible_module.module.fail_json(msg="VRF {} does not exist".format(vrf_name))
             aruba_ansible_module = vrf.create_vrf(aruba_ansible_module, vrf_name)
 
         port_field = {
-            "vrf" : vrf_name
+            "vrf": vrf_name
         }
 
         aruba_ansible_module = port.update_port_fields(aruba_ansible_module, interface_name, port_field)
@@ -312,13 +322,22 @@ class L3_Interface:
         if not port.check_port_exists(aruba_ansible_module, interface_name):
             aruba_ansible_module.module.fail_json(msg="Interface {} is not configured".format(interface_name))
 
+        result = port.get_port_field_values(aruba_ansible_module,
+                                            interface_name,
+                                            ['vrf'])
+        if 'vrf' in result.keys():
+            if result['vrf'] != "" and result['vrf'] != vrf_name:
+                aruba_ansible_module.module.fail_json(
+                    msg=("Interface {} is attached to VRF {}. Delete interface and recreate with VRF {}".format(
+                        interface_name, result['vrf'], vrf_name)))
+
         if not vrf.check_vrf_exists(aruba_ansible_module, vrf_name):
             if vrf_name != "default":
                 aruba_ansible_module.module.fail_json(msg="VRF {} does not exist".format(vrf_name))
             aruba_ansible_module = vrf.create_vrf(aruba_ansible_module, vrf_name)
 
         port_field = {
-            "vrf" : vrf_name
+            "vrf": vrf_name
         }
 
         aruba_ansible_module = port.update_port_fields(aruba_ansible_module, interface_name, port_field)

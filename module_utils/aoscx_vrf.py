@@ -40,26 +40,23 @@ class VRF:
         return aruba_ansible_module
 
     def delete_vrf(self, aruba_ansible_module, vrf_name):
-
-        error = ("VRF {} is attached to {}\nInterface must be deleted and "
+        error = ("VRF {} is attached to {}. Interface must be deleted and "
                  "created under new VRF before VRF can "
-                 "be deleted.".format(vrf_name,
-                                      encoded_port_name.replace.replace('%2F',
-                                                                        '/')))
-
+                 "be deleted.")
         if not self.check_vrf_exists(aruba_ansible_module, vrf_name):
             aruba_ansible_module.warnings.append(
                 "VRF {} is not configured".format(vrf_name))
             return aruba_ansible_module
 
-        # Remove the ipv4 and restore the VRF to the default VRF
+        # Throw error if VRF is attached to an interface
         if aruba_ansible_module.running_config.has_key('Port'):
             port_dict = aruba_ansible_module.running_config['Port']
             for encoded_port_name in port_dict.keys():
                 temp_port_dict = port_dict[encoded_port_name]
                 if 'vrf' in temp_port_dict.keys():
                     if temp_port_dict['vrf'] == vrf_name:
-                        aruba_ansible_module.module.fail_json(msg=error)
+                        aruba_ansible_module.module.fail_json(msg=error.format(vrf_name,
+                                encoded_port_name.replace('%2F', '/')))
 
         aruba_ansible_module.running_config['System']['vrfs'].pop(vrf_name)
         return aruba_ansible_module

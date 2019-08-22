@@ -192,7 +192,7 @@ def main():
                 aruba_ansible_module, interface_name, acl_name, acl_type,
                 acl_direction)
 
-        if vrf is not None:
+        if vrf is not None and vrf != "default":
             aruba_ansible_module = l3_interface.update_interface_vrf_details_from_l3(aruba_ansible_module, vrf, interface_name)  # NOQA
 
         if interface_qos_rate is not None:
