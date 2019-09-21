@@ -74,9 +74,9 @@ EXAMPLES = r'''
     acl_entries: {
       '809': {action: permit, # ACL Entry Action - choices: ['permit', 'deny']
               count: false, # Enable 'count' on the ACL Entry - choices: ['permit', 'deny']
-              dst_ip: 1000:1012:1cce:820b::12/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff,  # Matching Destination IPv4 address, format IP/MASK
+              dst_ip: 1000:1012:1cce:820b::12/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff,  # Matching Destination IPv6 address, format IP/MASK
               protocol: icmpv6,  # Matching protocol
-              src_ip: 1000:1012:1cce:820b::12/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff # Matching Source IPv4 address, format IP/MASK
+              src_ip: 1000:1012:1cce:820b::12/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff # Matching Source IPv6 address, format IP/MASK
               }
       }
 
