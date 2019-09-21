@@ -67,16 +67,16 @@ EXAMPLES = r'''
             }
       }
 
-- name: Configure IPv6 ACL with entry - 809 permit icmpv6 1000:1012:1cce:820b::12 1000:1012:1cce:820b::12
+- name: Configure IPv6 ACL with entry - 809 permit icmpv6 2001:db8::11 2001:db8::12
   aoscx_acl:
     name: ipv6_acl_example
     type: ipv6
     acl_entries: {
       '809': {action: permit, # ACL Entry Action - choices: ['permit', 'deny']
               count: false, # Enable 'count' on the ACL Entry - choices: ['permit', 'deny']
-              dst_ip: 1000:1012:1cce:820b::12/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff,  # Matching Destination IPv6 address, format IP/MASK
+              dst_ip: 2001:db8::11/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff,  # Matching Destination IPv6 address, format IP/MASK
               protocol: icmpv6,  # Matching protocol
-              src_ip: 1000:1012:1cce:820b::12/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff # Matching Source IPv6 address, format IP/MASK
+              src_ip: 2001:db8::12/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff # Matching Source IPv6 address, format IP/MASK
               }
       }
 
