@@ -99,7 +99,7 @@ EXAMPLES = '''
     interface: 1/1/3
     description: Uplink Interface
     ipv4: ['10.20.1.3/24']
-    ipv6: ['2000:db8::1234/32']
+    ipv6: ['2000:db8::1234/64']
     vrf: red
 
 - name: Creating new L3 interface 1/1/6 with IPv4 address on VRF default
