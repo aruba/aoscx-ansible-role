@@ -72,8 +72,8 @@ set role to `aoscx-ansible-role`:
             ipv6: ['2001:db8::1234/64']
 ```
 
-If role installed through [Galaxy](https://galaxy.ansible.com/arubanetworks/aoscx)
-set role to `arubanetworks.aoscx`:
+If role installed through [Galaxy](https://galaxy.ansible.com/arubanetworks/aoscx_role)
+set role to `arubanetworks.aoscx_role`:
 
 ```yaml
     ---
