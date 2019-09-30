@@ -29,7 +29,7 @@ ansible-galaxy install git+https://github.com/aruba/aoscx-ansible-role.git
 Through Galaxy:
 
 ```
-ansible-galaxy install arubanetworks.aoscx
+ansible-galaxy install arubanetworks.aoscx_role
 ```
 
 Inventory Variables
@@ -79,7 +79,7 @@ set role to `arubanetworks.aoscx`:
     ---
     -  hosts: all
        roles:
-        - role: arubanetworks.aoscx
+        - role: arubanetworks.aoscx_role
        tasks:
          - name: Create L3 Interface 1/1/3
            aoscx_l3_interface:
