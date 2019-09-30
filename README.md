@@ -69,7 +69,7 @@ set role to `aoscx-ansible-role`:
             interface: 1/1/3
             description: Uplink_Interface
             ipv4: ['10.20.1.3/24']
-            ipv6: ['2000:db8::1234/32']
+            ipv6: ['2001:db8::1234/64']
 ```
 
 If role installed through [Galaxy](https://galaxy.ansible.com/arubanetworks/aoscx)
@@ -86,7 +86,7 @@ set role to `arubanetworks.aoscx`:
             interface: 1/1/3
             description: Uplink_Interface
             ipv4: ['10.20.1.3/24']
-            ipv6: ['2000:db8::1234/32']
+            ipv6: ['2001:db8::1234/64']
 ```
 
 Contribution
