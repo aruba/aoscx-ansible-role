@@ -108,33 +108,33 @@ EXAMPLES = '''
   aoscx_l2_interface:
     interface: 1/1/1
     vlan_mode: trunk
-    vlan_trunks: 200
+    vlan_trunks: '200'
 
 - name: Configure Interface 1/1/1 - vlan trunk allowed 200,300
   aoscx_l2_interface:
     interface: 1/1/1
     vlan_mode: trunk
-    vlan_trunks: [200,300]
+    vlan_trunks: ['200','300']
 
 - name: Configure Interface 1/1/1 - vlan trunk allowed 200,300 , vlan trunk native 200
   aoscx_l2_interface:
     interface: 1/1/3
     vlan_mode: trunk
-    vlan_trunks: [200,300]
-    vlan_native_id: 200
+    vlan_trunks: ['200','300']
+    native_vlan_id: '200'
 
 - name: Configure Interface 1/1/4 - vlan access 200
   aoscx_l2_interface:
     interface: 1/1/4
     vlan_mode: access
-    vlan_access: 200
+    vlan_access: '200'
 
 - name: Configure Interface 1/1/5 - vlan trunk allowed all, vlan trunk native 200 tag
   aoscx_l2_interface:
     interface: 1/1/5
     vlan_mode: trunk
     trunk_allowed_all: True
-    native_vlan_id: 200
+    native_vlan_id: '200'
     native_vlan_tag: True
 
 - name: Configure Interface 1/1/6 - vlan trunk allowed all, vlan trunk native 200
@@ -142,7 +142,7 @@ EXAMPLES = '''
     interface: 1/1/6
     vlan_mode: trunk
     trunk_allowed_all: True
-    native_vlan_id: 200
+    native_vlan_id: '200'
 '''  # NOQA
 
 RETURN = r''' # '''
