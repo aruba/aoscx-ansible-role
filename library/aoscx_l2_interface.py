@@ -216,8 +216,11 @@ def main():
 
             if params['native_vlan_id']:
                 if params['native_vlan_id'] == '1':
-                    interface_vlan_dict['vlan_mode'] = 'native-untagged'
                     interface_vlan_dict['vlan_tag'] = '1'
+                    if params['native_vlan_tag']:
+                        interface_vlan_dict['vlan_mode'] = 'native-tagged'
+                    else:
+                        interface_vlan_dict['vlan_mode'] = 'native-untagged'
                 elif vlan.check_vlan_exist(aruba_ansible_module,
                                          params['native_vlan_id']):
                     if params['native_vlan_tag']:
@@ -229,6 +232,11 @@ def main():
                     aruba_ansible_module.module.fail_json(
                         msg="VLAN {} is not configured".format(
                             params['native_vlan_id']))
+
+            elif  params['native_vlan_tag']:
+                  interface_vlan_dict['vlan_mode'] = 'native-tagged'
+                  interface_vlan_dict['vlan_tag'] = '1'
+                                               
             else:
                 interface_vlan_dict['vlan_mode'] = 'native-untagged'
                 interface_vlan_dict['vlan_tag'] = '1'
