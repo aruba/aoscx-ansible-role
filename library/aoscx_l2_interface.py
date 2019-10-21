@@ -108,33 +108,33 @@ EXAMPLES = '''
   aoscx_l2_interface:
     interface: 1/1/1
     vlan_mode: trunk
-    vlan_trunks: 200
+    vlan_trunks: '200'
 
 - name: Configure Interface 1/1/1 - vlan trunk allowed 200,300
   aoscx_l2_interface:
     interface: 1/1/1
     vlan_mode: trunk
-    vlan_trunks: [200,300]
+    vlan_trunks: ['200','300']
 
 - name: Configure Interface 1/1/1 - vlan trunk allowed 200,300 , vlan trunk native 200
   aoscx_l2_interface:
     interface: 1/1/3
     vlan_mode: trunk
-    vlan_trunks: [200,300]
-    vlan_native_id: 200
+    vlan_trunks: ['200','300']
+    native_vlan_id: '200'
 
 - name: Configure Interface 1/1/4 - vlan access 200
   aoscx_l2_interface:
     interface: 1/1/4
     vlan_mode: access
-    vlan_access: 200
+    vlan_access: '200'
 
 - name: Configure Interface 1/1/5 - vlan trunk allowed all, vlan trunk native 200 tag
   aoscx_l2_interface:
     interface: 1/1/5
     vlan_mode: trunk
     trunk_allowed_all: True
-    native_vlan_id: 200
+    native_vlan_id: '200'
     native_vlan_tag: True
 
 - name: Configure Interface 1/1/6 - vlan trunk allowed all, vlan trunk native 200
@@ -142,7 +142,7 @@ EXAMPLES = '''
     interface: 1/1/6
     vlan_mode: trunk
     trunk_allowed_all: True
-    native_vlan_id: 200
+    native_vlan_id: '200'
 '''  # NOQA
 
 RETURN = r''' # '''
@@ -215,7 +215,13 @@ def main():
         elif params['vlan_mode'] == 'trunk':
 
             if params['native_vlan_id']:
-                if vlan.check_vlan_exist(aruba_ansible_module,
+                if params['native_vlan_id'] == '1':
+                    interface_vlan_dict['vlan_tag'] = '1'
+                    if params['native_vlan_tag']:
+                        interface_vlan_dict['vlan_mode'] = 'native-tagged'
+                    else:
+                        interface_vlan_dict['vlan_mode'] = 'native-untagged'
+                elif vlan.check_vlan_exist(aruba_ansible_module,
                                          params['native_vlan_id']):
                     if params['native_vlan_tag']:
                         interface_vlan_dict['vlan_mode'] = 'native-tagged'
@@ -226,8 +232,14 @@ def main():
                     aruba_ansible_module.module.fail_json(
                         msg="VLAN {} is not configured".format(
                             params['native_vlan_id']))
+
+            elif  params['native_vlan_tag']:
+                  interface_vlan_dict['vlan_mode'] = 'native-tagged'
+                  interface_vlan_dict['vlan_tag'] = '1'
+                                               
             else:
                 interface_vlan_dict['vlan_mode'] = 'native-untagged'
+                interface_vlan_dict['vlan_tag'] = '1'
 
             if not params['trunk_allowed_all'] and params['vlan_trunks']:
                 if 'vlan_mode' not in interface_vlan_dict.keys():

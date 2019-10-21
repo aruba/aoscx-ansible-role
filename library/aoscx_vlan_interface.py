@@ -91,21 +91,26 @@ options:
 '''  # NOQA
 
 EXAMPLES = '''
-     - name: Adding VLAN interface
-       aoscx_vlan_interface:
-         interface: "{{ item.interface }}"
-         description: "{{ item.description }}"
-       with_items:
-         - { interface: 1/1/2, vlan_details: {"vlan_tag" 2, "vlan_mode":"access" }}
-         - { interface: 1/1/3, vlan_details: {"vlan_tag" 2, "vlan_mode":"access" }}
+  - name: Create VLAN Interface 100
+    aoscx_vlan_interface:
+      vlan_id: 100
+      description: UPLINK_VLAN
+      ipv4: ['10.10.20.1/24']
+      ipv6: ['2000:db8::1234/64']
 
-     - name: Deleting interface
-       aoscx_vlan_interface:
-         interface: "{{ item.interface }}"
-         state: "{{ item.state }}"
-       with_items:
-           - { interface: vlan2, state: absent }
-           - { interface: vlan3, state: absent }
+  - name: Create VLAN Interface 200
+    aoscx_vlan_interface:
+      vlan_id: 200
+      description: UPLINK_VLAN
+      ipv4: ['10.20.20.1/24']
+      ipv6: ['3000:db8::1234/64']
+      vrf: red
+      ip_helper_address: ['10.40.20.1']
+
+  - name: Delete VLAN Interface 100
+    aoscx_vlan_interface:
+      vlan_id: 100
+      state: delete
 '''  # NOQA
 
 RETURN = r''' # '''

@@ -32,7 +32,7 @@ class VLAN:
         vlan_id_str = str(vlan_id)
         if not aruba_ansible_module.running_config.has_key(vlan_id_str):
             aruba_ansible_module.running_config["VLAN"][vlan_id_str] = {
-                "id" : vlan_id
+                "id": vlan_id
             }
 
         return aruba_ansible_module
@@ -43,6 +43,9 @@ class VLAN:
             return False
 
         vlan_id_str = str(vlan_id)
+
+        if vlan_id_str == '1':
+            return True
 
         if not aruba_ansible_module.running_config["VLAN"].has_key(vlan_id_str):
             return False
