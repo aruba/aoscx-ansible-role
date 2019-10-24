@@ -46,10 +46,28 @@ The variables that should be defined in your inventory for your AOS-CX host are:
 * `ansible_httpapi_validate_certs`: Set `True` or `False` depending on if Ansible should attempt to validate certificates  
 * `ansible_acx_no_proxy`: Set `True` or `False` depending if Ansible should bypass environment proxies to connect to AOS-CX  
 
-Sample `inventory.ini`:
+### Sample Inventory:
 
-```ini
+#### INI
+
+```INI
 aoscx_1 ansible_host=10.0.0.1 ansible_user=admin ansible_password=password ansible_connection=httpapi ansible_network_os=aoscx ansible_httpapi_validate_certs=False ansible_httpapi_use_ssl=True ansible_acx_no_proxy=True
+```
+
+#### YAML
+
+```yaml
+all:
+  hosts:
+    aoscx_1:
+      ansible_host: 10.0.0.1
+      ansible_user: admin
+      ansible_password: password
+      ansible_connection: httpapi  # Do not change
+      ansible_network_os: aoscx
+      ansible_httpapi_validate_certs: False
+      ansible_httpapi_use_ssl: True
+      ansible_acx_no_proxy: True
 ```
 
 Example Playbook
