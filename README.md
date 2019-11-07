@@ -37,7 +37,7 @@ Inventory Variables
 
 The variables that should be defined in your inventory for your AOS-CX host are:
 
-* `ansible_host`: IP address of switch in `A.B.C.D` format  
+* `ansible_host`: IP address of switch in `A.B.C.D` format. For IPv6 hosts use a string and enclose in square brackets E.G. `'[2001::1]'` 
 * `ansible_user`: Username for switch in `plaintext` format  
 * `ansible_password`: Password for switch in `plaintext` format  
 * `ansible_connection`: Must always be set to `httpapi`  
