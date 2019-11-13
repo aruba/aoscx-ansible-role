@@ -1,24 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
+
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
 
 DOCUMENTATION = """
 ---
-author: Aruba Networks
+author: Aruba Networks (@ArubaNetworks)
 httpapi: aoscx
 short_description: Use REST to push configs to CX devices
 description:
@@ -45,12 +38,10 @@ from ansible.module_utils.parsing.convert_bool import boolean
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.plugins.httpapi import HttpApiBase
 
-
-try:
-    from __main__ import display
-except ImportError:
-    from ansible.utils.display import Display
-    display = Display()
+# Removed the exception handling as only required pre 2.8 and collection is
+# supported in >= 2.9
+from ansible.utils.display import Display
+display = Display()
 
 
 class HttpApi(HttpApiBase):
@@ -66,12 +57,14 @@ class HttpApi(HttpApiBase):
 
     def login(self, username, password):
         self.set_no_proxy()
-        path = '/rest/v1/login?username='+username+'&password='+password
+        path = ('/rest/v1/login?username={username}'
+                '&password={password}'.format(username=username,
+                                              password=password))
         method = 'POST'
         headers = {}
 
-        _ = self.send_request(data=None, path=path, method=method,
-                              headers=headers)
+        self.send_request(data=None, path=path, method=method,
+                          headers=headers)
 
     def logout(self):
         path = '/rest/v1/logout'
@@ -111,19 +104,3 @@ class HttpApi(HttpApiBase):
             self.connection._auth = auth
         return response_data_json
 
-    def get_running_config(self):
-        if self.connection._connected:
-            path = '/rest/v1/fullconfigs/running-config'
-            method = 'GET'
-            data = None
-            response_data = self.send_request(data=data, method=method,
-                                              path=path)
-            display.vvvv(json.dumps(response_data))
-            return response_data
-
-    def put_running_config(self, updated_config):
-        if self.connection._connected:
-            path = '/rest/v1/fullconfigs/running-config'
-            method = 'PUT'
-            data = json.dumps(updated_config)
-            self.send_request(data=data, method=method, path=path)

@@ -1,20 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
+
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -30,64 +23,65 @@ short_description: Create or Delete VLAN Interface configuration on AOS-CX
 description:
   - This modules provides configuration management of VLAN Interfacess on
     AOS-CX devices.
-author:
-  - Aruba Networks
+author: Aruba Networks (@ArubaNetworks)
 options:
   vlan_id:
     description: The ID of this VLAN interface. Non-internal VLANs must have
                  an 'id' between 1 and 4094 to be effectively instantiated.
     required: true
+    type: str
   admin_state:
     description: Admin State status of vlan interface.
-    default: 'up'
     choices: ['up', 'down']
     required: false
+    type: str
   ipv4:
-    description: The IPv4 address and subnet mask in the address/mask format.
+    description: "The IPv4 address and subnet mask in the address/mask format.
       The first entry in the list is the primary IPv4, the remainings are
       secondary IPv4. i.e. ['10.1.1.1/24', '10.2.1.3/255.255.254.0']. To remove
-      an IP address pass in "" and set state: update.
+      an IP address pass in '' and set state: update."
     type: list
     required: False
   ipv6:
-    description: The IPv6 address and subnet mask in the address/mask format.
+    description: "The IPv6 address and subnet mask in the address/mask format.
       It takes multiple IPv6 with comma separated in the list.
       i.e. ['2000:cc92::2/64', '3000:820a::43/64']  . To remove an IP address
-      pass in "" and set state: update.
+      pass in '' and set state: update."
     type: list
     required: False
   vrf:
-    description: The VRF the vlan interface will belong to once created. If
+    description: "The VRF the vlan interface will belong to once created. If
       none provided, the interface will be in the Default VRF. If the VLAN
       interface is created and the user wants to change the interface vlan's
       VRF, the user must delete the VLAN interface then recreate the VLAN
-      interface in the desired VRF.
+      interface in the desired VRF."
     type: str
     required: False
   ip_helper_address:
-    description: Configure a remote DHCP server/relay IP address on the vlan
+    description: "Configure a remote DHCP server/relay IP address on the vlan
       interface. Here the helper address is same as the DHCP server address or
-      another intermediate DHCP relay.
+      another intermediate DHCP relay."
     type: list
     required: False
   description:
     description: VLAN description
     required: false
+    type: str
   active_gateway_ip:
     description: Configure IPv4 active-gateway for vlan interface.
-    type: string
+    type: str
     required: False
   active_gateway_mac_v4:
-    description: Configure virtual MAC address for IPv4 active-gateway for
-      vlan interface. Must be used in conjunction of active_gateway_ip
-    type: string
+    description: "Configure virtual MAC address for IPv4 active-gateway for
+      vlan interface. Must be used in conjunction of active_gateway_ip"
+    type: str
     required: False
   state:
     description: Create or update or delete the VLAN.
     required: false
     choices: ['create', 'update', 'delete']
     default: create
-
+    type: str
 '''  # NOQA
 
 EXAMPLES = '''
@@ -153,10 +147,11 @@ def main():
     interface = Interface()
     vlan_interface_id = "vlan" + vlan_id
     if not vlan.check_vlan_exist(aruba_ansible_module, vlan_id):
-        aruba_ansible_module.module.fail_json(msg="VLAN {} does not exist. "
+        aruba_ansible_module.module.fail_json(msg="VLAN {id} does not exist. "
                                                   "VLAN needs to be created "
                                                   "before adding or deleting "
-                                                  "interfaces".format(vlan_id))
+                                                  "interfaces"
+                                                  "".format(id=vlan_id))
 
     if state == 'create':
         aruba_ansible_module = port.create_port(aruba_ansible_module,
@@ -234,7 +229,7 @@ def main():
 
         if (active_gateway_ip is not None) and (active_gateway_mac_v4 is None):
             aruba_ansible_module.module.fail_json(msg=" Both active_gateway_ip and active_gateway_mac_v4 are required for configure active gateway.")  # NOQA
-        elif (active_gateway_ip is  None) and (active_gateway_mac_v4 is not None):  # NOQA
+        elif (active_gateway_ip is None) and (active_gateway_mac_v4 is not None):  # NOQA
             aruba_ansible_module.module.fail_json(msg=" Both active_gateway_ip and active_gateway_mac_v4 are required for configure active gateway.")  # NOQA
         elif (active_gateway_ip is not None) and (active_gateway_mac_v4 is not None):  # NOQA
             port_fields = {"vsx_virtual_ip4": active_gateway_ip,

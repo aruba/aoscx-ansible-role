@@ -1,20 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
+
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -26,64 +18,63 @@ DOCUMENTATION = '''
 ---
 module: aoscx_l3_interface
 version_added: "2.8"
-short_description: Create or Update or Delete Layer3 Interface configuration
-  on AOS-CX
+short_description: Create or Update or Delete Layer3 Interface configuration on AOS-CX
 description:
   - This modules provides configuration management of Layer3 Interfaces on
     AOS-CX devices.
-author:
-  - Aruba Networks
+author: Aruba Networks (@ArubaNetworks)
 options:
   interface:
     description: Interface name, should be in the format chassis/slot/port,
       i.e. 1/2/3 , 1/1/32.
-    type: string
+    type: str
     required: true
   admin_state:
     description: Admin State status of interface.
     default: 'up'
     choices: ['up', 'down']
     required: false
+    type: str
   description:
     description: Description of interface.
-    type: string
+    type: str
     required: false
   ipv4:
-    description: The IPv4 address and subnet mask in the address/mask format.
+    description: "The IPv4 address and subnet mask in the address/mask format.
       The first entry in the list is the primary IPv4, the remainings are
       secondary IPv4. i.e. ['10.1.1.1/24', '10.2.1.3/255.255.254.0']  To remove
-      an IP address pass in "" and set state: update.
+      an IP address pass in '' and set 'state: update'."
     type: list
     required: False
   ipv6:
-    description: The IPv6 address and subnet mask in the address/mask format.
+    description: "The IPv6 address and subnet mask in the address/mask format.
       It takes multiple IPv6 with comma separated in the list.
       i.e. ['2000:cc92::2/64', '3000:820a::43/64']  To remove
-      an IP address pass in "" and set state: update.
+      an IP address pass in '' and set state: update."
     type: list
     required: False
   vrf:
-    description: The VRF the interface will belong to once created. If none
+    description: "The VRF the interface will belong to once created. If none
       provided, the interface will be in the Default VRF. If an L3 interface is
       created and the user wants to change the interface's VRF, the user must
-      delete the L3 interface then recreate the interface in the desired VRF.
-    type: string
+      delete the L3 interface then recreate the interface in the desired VRF."
+    type: str
     required: False
   interface_qos_schedule_profile:
     description: Attaching existing QoS schedule profile to interface.
-    type: dictionary
+    type: dict
     required: False
   interface_qos_rate:
     description: "The rate limit value configured for
       broadcast/multicast/unknown unicast traffic. Dictionary should have the
       format ['type_of_traffic'] = speed i.e. {'unknown-unicast': 100pps,
       'broadcast': 200pps, 'multicast': 200pps}"
-    type: dictionary
+    type: dict
     required: False
   ip_helper_address:
-    description: Configure a remote DHCP server/relay IP address on the device
+    description: "Configure a remote DHCP server/relay IP address on the device
       interface. Here the helper address is same as the DHCP server address or
-      another intermediate DHCP relay.
+      another intermediate DHCP relay."
     type: list
     required: False
   state:
@@ -91,6 +82,7 @@ options:
     choices: ['create', 'delete', 'update']
     default: 'create'
     required: false
+    type: str
 '''  # NOQA
 
 EXAMPLES = '''
@@ -138,10 +130,9 @@ def main():
         ipv4=dict(type='list', default=None),
         ipv6=dict(type='list', default=None),
         interface_qos_rate=dict(type='dict', default=None),
-        interface_qos_schedule_profile=dict(type='str', default=None),
+        interface_qos_schedule_profile=dict(type='dict', default=None),
         vrf=dict(type='str', default=None),
         ip_helper_address=dict(type='list', default=None),
-        interface_acl_details=dict(type='dict', default=None),
         state=dict(default='create', choices=['create', 'delete', 'update'])
     )
 
@@ -156,8 +147,6 @@ def main():
     interface_qos_schedule_profile = aruba_ansible_module.module.params[
         'interface_qos_schedule_profile']
     vrf = aruba_ansible_module.module.params['vrf']
-    interface_acl_details = aruba_ansible_module.module.params[
-        'interface_acl_details']
     ip_helper_address = aruba_ansible_module.module.params['ip_helper_address']
 
     state = aruba_ansible_module.module.params['state']
@@ -184,14 +173,6 @@ def main():
             aruba_ansible_module = interface.update_interface_description(
                 aruba_ansible_module, interface_name, description)
 
-        if interface_acl_details is not None:
-            acl_name = interface_acl_details["acl_name"]
-            acl_type = interface_acl_details["acl_type"]
-            acl_direction = interface_acl_details["acl_direction"]
-            aruba_ansible_module = l3_interface.update_interface_acl_details(
-                aruba_ansible_module, interface_name, acl_name, acl_type,
-                acl_direction)
-
         if vrf is not None and vrf != "default":
             aruba_ansible_module = l3_interface.update_interface_vrf_details_from_l3(aruba_ansible_module, vrf, interface_name)  # NOQA
 
@@ -200,7 +181,7 @@ def main():
                 aruba_ansible_module, interface_name, interface_qos_rate)
 
         if interface_qos_schedule_profile is not None:
-            aruba_ansible_module = l3_interface.update_interface_qos_profile(aruba_ansible_module, interface_name,interface_qos_schedule_profile)  # NOQA
+            aruba_ansible_module = l3_interface.update_interface_qos_profile(aruba_ansible_module, interface_name, interface_qos_schedule_profile)  # NOQA
 
         if ipv4 is not None:
             aruba_ansible_module = l3_interface.update_interface_ipv4_address(aruba_ansible_module, interface_name, ipv4)  # NOQA

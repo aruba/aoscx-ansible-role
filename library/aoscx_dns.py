@@ -1,20 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
+
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -29,8 +22,7 @@ version_added: "2.8"
 short_description: Create or Delete DNS Client configuration on AOS-CX
 description:
   - This modules provides configuration management of DNS on AOS-CX devices.
-author:
-  - Aruba Networks
+author: Aruba Networks (@ArubaNetworks)
 options:
   mgmt_nameservers:
     description: Primary and secondary nameservers on mgmt interface. The key
@@ -41,7 +33,7 @@ options:
   dns_domain_name:
     description: Domain name used for name resolution by the DNS client, if
       'dns_domain_list' is not configured
-    type: string
+    type: str
     required: True
   dns_domain_list:
     description: Domain list names to be used for address resolution, keyed by
@@ -55,7 +47,7 @@ options:
     required: True
   vrf:
     description: VRF name where DNS configuration is added
-    type: string
+    type: str
     required: False
   dns_host_v4_address_mapping:
     description: List of static host address configurations and the IPv4
@@ -67,6 +59,7 @@ options:
     default: create
     choices: ['create', 'update', 'delete']
     required: False
+    type: str
 '''
 
 EXAMPLES = '''
@@ -142,7 +135,8 @@ def main():
         dns_name_servers=dict(type='dict', required=False),
         vrf=dict(type='str', required=False),
         dns_host_v4_address_mapping=dict(type='dict', required=False),
-        state=dict(type='str', choices=['create', 'delete', 'update'])
+        state=dict(type='str', default='create',
+                   choices=['create', 'delete', 'update'])
     )
 
     aruba_ansible_module = ArubaAnsibleModule(module_args)
@@ -165,7 +159,7 @@ def main():
 
                 aruba_ansible_module.module.fail_json(msg="The management interface must have static IP to configure management interface name servers")  # NOQA
 
-            for k, v in mgmt_nameservers.iteritems():
+            for k, v in mgmt_nameservers.items():
                 if k.lower() == 'primary':
                     aruba_ansible_module.running_config['System']['mgmt_intf']['dns_server_1'] = v  # NOQA
                 elif k.lower() == 'secondary':
@@ -193,7 +187,7 @@ def main():
 
         if mgmt_nameservers is not None:
 
-            for k, v in mgmt_nameservers.iteritems():
+            for k, v in mgmt_nameservers.items():
                 if k.lower() == 'primary':
                     aruba_ansible_module.running_config['System']['mgmt_intf'].pop('dns_server_1')  # NOQA
                 elif k.lower() == 'secondary':

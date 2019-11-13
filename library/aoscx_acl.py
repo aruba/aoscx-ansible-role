@@ -1,20 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
+
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -28,16 +21,17 @@ module: aoscx_acl
 version_added: "2.8"
 short_description: Manage ACL configuration for AOS-CX.
 description:
-  - This modules provides configuration management and creation of Access
-  Classifier Lists on AOS-CX devices.
-author:
-  - Aruba Networks
+  - This modules provides configuration management and creation of Access Classifier Lists on AOS-CX devices.
+author: Aruba Networks (@ArubaNetworks)
 options:
   name:
     description: Name of the Access Classifier List
+    type: str
     required: true
   type:
     description: Type of the Access Classifier List
+    type: str
+    choices: ['ipv4', 'ipv6', 'mac']
     required: true
   acl_entries:
     description: "Dictionary of dictionaries of Access Classifier Entries
@@ -45,13 +39,15 @@ options:
       should be the sequence number of the ACL entry. Each ACL entry dictionary
       should have the minimum following keys - action , src_ip, dst_ip. See
       below for examples of options and values."
+    type: dict
     required: false
   state:
     description: Create, Update, or Delete Access Classifier List
+    type: str
     choices: ['create', 'delete', 'update']
     default: 'create'
     required: false
-'''
+'''  # NOQA
 
 EXAMPLES = r'''
 - name: Configure IPv4 ACL with entry - 1 deny tcp 10.10.12.12 10.10.12.11 count
@@ -137,7 +133,9 @@ def main():
         name=dict(type='str', required=True),
         type=dict(type='str', required=True, choices=['ipv4', 'ipv6', 'mac']),
         acl_entries=dict(type='dict', default=None),
-        state=dict(default='create', choices=['create', 'delete', 'update'])
+        state=dict(type='str', default='create', choices=['create',
+                                                          'delete',
+                                                          'update'])
     )
 
     aruba_ansible_module = ArubaAnsibleModule(module_args=module_args)

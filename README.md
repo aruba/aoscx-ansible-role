@@ -120,6 +120,7 @@ Apache 2.0
 
 Author Information
 ------------------
-Madhusudan Pranav Venugopal (madhusudan-pranav-venugopal)  
-Yang Liu (yliu-aruba)  
-Tiffany Chiapuzio-Wong (tchiapuziowong)  
+ - Madhusudan Pranav Venugopal (@madhusudan-pranav-venugopal)
+ - Yang Liu (@yliu-aruba)
+ - Tiffany Chiapuzio-Wong (@tchiapuziowong)
+
