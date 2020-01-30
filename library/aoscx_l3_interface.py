@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# (C) Copyright 2019-2020 Hewlett Packard Enterprise Development LP.
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from __future__ import (absolute_import, division, print_function)
@@ -157,7 +158,9 @@ def main():
         aruba_ansible_module = l3_interface.create_l3_interface(aruba_ansible_module, interface_name)  # NOQA
         if vrf is None:
             vrf = "default"
-        aruba_ansible_module = l3_interface.update_interface_vrf_details_from_l3(aruba_ansible_module, vrf, interface_name)  # NOQA
+
+        if vrf is not None:
+            aruba_ansible_module = l3_interface.update_interface_vrf_details_from_l3(aruba_ansible_module, vrf, interface_name)  # NOQA
 
     if state == 'delete':
         aruba_ansible_module = l3_interface.delete_l3_interface(

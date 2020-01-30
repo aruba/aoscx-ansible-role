@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# (C) Copyright 2019-2020 Hewlett Packard Enterprise Development LP.
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from __future__ import (absolute_import, division, print_function)
@@ -48,10 +49,10 @@ class HttpApi(HttpApiBase):
 
     def set_no_proxy(self):
         try:
-            no_proxy = boolean(self.get_option("acx_no_proxy"))
+            self.no_proxy = boolean(self.get_option("acx_no_proxy"))
         except NameError:
-            no_proxy = False
-        if no_proxy:
+            self.no_proxy = False
+        if self.no_proxy:
             os.environ['no_proxy'] = "*"
             display.vvvv("no_proxy set to True")
 
@@ -74,12 +75,23 @@ class HttpApi(HttpApiBase):
 
     def send_request(self, data, **message_kwargs):
         headers = {}
+        if 'headers' in message_kwargs.keys():
+            headers = message_kwargs['headers']
+
         if self.connection._auth:
             headers.update(self.connection._auth)
         response, response_data = self.connection.send(
             data=data, headers=headers, path=message_kwargs['path'],
             method=message_kwargs['method'])
         return self.handle_response(response, response_data)
+
+    def get_connection_details(self):
+        connection_details = {}
+        if self.connection._auth:
+            connection_details['auth'] = self.connection._auth
+        connection_details['url'] = self.connection._url
+        connection_details['no_proxy'] = self.no_proxy
+        return connection_details
 
     def handle_response(self, response, response_data):
         response_data_json = ''
@@ -103,4 +115,3 @@ class HttpApi(HttpApiBase):
         if auth:
             self.connection._auth = auth
         return response_data_json
-
