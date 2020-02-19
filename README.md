@@ -77,34 +77,34 @@ If role installed through [Github](https://github.com/aruba/aoscx-ansible-role)
 set role to `aoscx-ansible-role`:
 
 ```yaml
-    ---
-    -  hosts: all
-       roles:
-        - role: aoscx-ansible-role
-       tasks:
-         - name: Create L3 Interface 1/1/3
-           aoscx_l3_interface:
-            interface: 1/1/3
-            description: Uplink_Interface
-            ipv4: ['10.20.1.3/24']
-            ipv6: ['2001:db8::1234/64']
+---
+-  hosts: all
+   roles:
+    - role: aoscx-ansible-role
+   tasks:
+     - name: Create L3 Interface 1/1/3
+       aoscx_l3_interface:
+        interface: 1/1/3
+        description: Uplink_Interface
+        ipv4: ['10.20.1.3/24']
+        ipv6: ['2001:db8::1234/64']
 ```
 
 If role installed through [Galaxy](https://galaxy.ansible.com/arubanetworks/aoscx_role)
 set role to `arubanetworks.aoscx_role`:
 
 ```yaml
-    ---
-    -  hosts: all
-       roles:
-        - role: arubanetworks.aoscx_role
-       tasks:
-         - name: Create L3 Interface 1/1/3
-           aoscx_l3_interface:
-            interface: 1/1/3
-            description: Uplink_Interface
-            ipv4: ['10.20.1.3/24']
-            ipv6: ['2001:db8::1234/64']
+---
+-  hosts: all
+   roles:
+    - role: arubanetworks.aoscx_role
+   tasks:
+     - name: Create L3 Interface 1/1/3
+       aoscx_l3_interface:
+        interface: 1/1/3
+        description: Uplink_Interface
+        ipv4: ['10.20.1.3/24']
+        ipv6: ['2001:db8::1234/64']
 ```
 
 Contribution
