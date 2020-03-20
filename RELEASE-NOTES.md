@@ -1,3 +1,17 @@
+# 2.1.0
+
+## Notable Changes
+* New Modules and Bug fixes
+* This release includes new modules that allow for SSH/CLI commands and configuration. Refer to module documentation found in [docs/](https://github.com/aruba/aoscx-ansible-role/tree/master/docs).
+
+## New Modules
+* aoscx_command - This module connects to the CX device via SSH and allows CLI commands to be executed.
+* aoscx_config - This module connects to the CX device via SSH and allows CLI configuration commands to be executed.
+* aoscx_facts - This module used REST API to retrieve a subset of information from the CX device.
+
+## Known Issues
+* To use the aoscx_facts module, the device must be running firmware version 10.4 or higher.
+
 # 2.0.0
 
 ## Notable Changes
@@ -13,8 +27,8 @@
 
 ## Known Issues
 * There is a known issue with the following modules on all platforms and 10.4 firmware version. Please only use these modules with 10.3 at this time: 
-    * aoscx_l3_interface
-    * aoscx_vlan_interface
+** aoscx_l3_interface
+** aoscx_vlan_interface
 * To upload firmware using HTTP server with the module aoscx_upload_firmware, the device must be running firmware version 10.4 or higher.
 
 # 1.0.5

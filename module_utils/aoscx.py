@@ -12,33 +12,138 @@ __metaclass__ = type
 import copy
 import json
 import requests
+import re
 from ansible.module_utils._text import to_text
+from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.connection import Connection, ConnectionError
+from ansible.module_utils.network.common.utils import to_list, ComplexList
+from ansible.module_utils.connection import exec_command, Connection, ConnectionError
 
 _DEVICE_CONNECTION = None
 
+_DEVICE_CONFIGS = {}
+
+aoscx_provider_spec = {
+    'host': dict(),
+    'port': dict(type='int'),
+    'username': dict(fallback=(env_fallback, ['ANSIBLE_NET_USERNAME'])),
+    'password': dict(fallback=(env_fallback, ['ANSIBLE_NET_PASSWORD']), no_log=True),
+    'ssh_keyfile': dict(fallback=(env_fallback, ['ANSIBLE_NET_SSH_KEYFILE']), type='path'),
+    'authorize': dict(fallback=(env_fallback, ['ANSIBLE_NET_AUTHORIZE']), type='bool'),
+    'auth_pass': dict(fallback=(env_fallback, ['ANSIBLE_NET_AUTH_PASS']), no_log=True),
+    'timeout': dict(type='int')
+}
+
+aoscx_http_provider_spec = {
+    'host': dict(),
+    'port': dict(type='int'),
+    'username': dict(fallback=(env_fallback, ['ANSIBLE_NET_USERNAME'])),
+    'password': dict(fallback=(env_fallback, ['ANSIBLE_NET_PASSWORD']), no_log=True)
+}
+
+aoscx_argument_spec = {
+    'provider': dict(type='dict', options=aoscx_provider_spec, removed_in_version=2.14),
+}
+
+aoscx_http_argument_spec = {
+    'provider': dict(type='dict', options=aoscx_http_provider_spec, removed_in_version=2.14),
+}
+
+def get_provider_argspec():
+    '''
+    Returns the provider argument specification
+    '''
+    return aoscx_provider_spec
+
+def check_args(module, warnings):
+    '''
+    Checks the argument
+    '''
+    pass
+
+def get_config(module, flags=None):
+    '''
+    Obtains the switch configuration
+    '''
+    flags = [] if flags is None else flags
+
+    cmd = 'show running-config '
+    cmd += ' '.join(flags)
+    cmd = cmd.strip()
+
+    try:
+        return _DEVICE_CONFIGS[cmd]
+    except KeyError:
+        rc, out, err = exec_command(module, cmd)
+        if rc != 0:
+            module.fail_json(msg='unable to retrieve current config', stderr=to_text(err, errors='surrogate_then_replace'))
+        cfg = to_text(out, errors='surrogate_then_replace').strip()
+        _DEVICE_CONFIGS[cmd] = cfg
+        return cfg
+
+def load_config(module, commands):
+    '''
+    Loads the configuration onto the switch
+    '''
+    rc, out, err = exec_command(module, 'configure terminal')
+    if rc != 0:
+        module.fail_json(msg='unable to enter configuration mode', err=to_text(out, errors='surrogate_then_replace'))
+
+    for command in to_list(commands):
+        if command == 'end':
+            continue
+        rc, out, err = exec_command(module, command)
+        if rc != 0:
+            module.fail_json(msg=to_text(err, errors='surrogate_then_replace'), command=command, rc=rc)
+
+    exec_command(module, 'end')
+
+
+def sanitize(resp):
+    '''
+    Sanitizes the string to remove additiona white spaces
+    '''
+    # Takes response from device and adjusts leading whitespace to just 1 space
+    cleaned = []
+    for line in resp.splitlines():
+        cleaned.append(re.sub(r"^\s+", " ", line))
+    return '\n'.join(cleaned).strip()
 
 class HttpApi:
+    '''
+    Module utils class for AOS-CX HTTP API connection
+    '''
     def __init__(self, module):
         self._module = module
         self._connection_obj = None
 
     @property
     def _connection(self):
+        '''
+        Creates HTTP API connection
+        '''
         if not self._connection_obj:
             self._connection_obj = Connection(self._module._socket_path)
         return self._connection_obj
 
     def get(self, url, data=None):
+        '''
+        GET REST call
+        '''
         res = self._connection.send_request(data=data, method='GET', path=url)
         return res
 
     def put(self, url, data=None, headers={}):
+        '''
+        PUT REST call
+        '''
         return self._connection.send_request(data=data, method='PUT', path=url,
                                              headers=headers)
 
     def post(self, url, data=None, headers={}):
+        '''
+        POST REST call
+        '''
         return self._connection.send_request(data=data, method='POST',
                                              path=url,
                                              headers=headers)
@@ -73,67 +178,96 @@ class HttpApi:
             raise ConnectionError(error_text, code=res.status_code)
         return res
 
-
-def get_connection(module):
+def get_connection(module, is_cli=False):
+    '''
+    Returns the connection plugin
+    '''
     global _DEVICE_CONNECTION
     if not _DEVICE_CONNECTION:
-        conn = HttpApi(module)
+        if is_cli:
+            if hasattr(module, '_aoscx_connection'):
+                _DEVICE_CONNECTION = module._aoscx_connection
+                return module._aoscx_connection
+            module._aoscx_connection = Connection(module._socket_path)
+            _DEVICE_CONNECTION = module._aoscx_connection
+            return module._aoscx_connection
+        else:
+            conn = HttpApi(module)
         _DEVICE_CONNECTION = conn
     return _DEVICE_CONNECTION
 
 
 def get(module, url, data=None):
+    '''
+    Perform GET REST call
+    '''
     conn = get_connection(module)
     res = conn.get(url, data)
     return res
 
 
 def put(module, url, data=None, headers={}):
+    '''
+    Perform PUT REST call
+    '''
     conn = get_connection(module)
     res = conn.put(url, data, headers)
     return res
 
 
 def post(module, url, data=None, headers={}):
+    '''
+    Perform POST REST call
+    '''
     conn = get_connection(module)
     res = conn.post(url, data, headers)
     return res
 
 
 def file_upload(module, url, files, headers={}):
+    '''
+    Upload File through REST
+    '''
     conn = get_connection(module)
     res = conn.file_upload(url, files, headers)
     return res
 
+def to_command(module, commands):
 
-class Cli:
-    def __init__(self, module):
-        self._module = module
-        self._connection_obj = None
+    '''
+    Convert command to ComplexList
+    '''
+    transform = ComplexList(dict(
+        command=dict(key=True),
+        prompt=dict(type='list'),
+        answer=dict(type='list'),
+        newline=dict(type='bool', default=True),
+        sendonly=dict(type='bool', default=False),
+        check_all=dict(type='bool', default=False),
+    ), module)
 
-    @property
-    def _connection(self):
-        if not self._connection_obj:
-            self._connection_obj = Connection(self._module._socket_path)
-        return self._connection_obj
+    return transform(to_list(commands))
 
-    def run_commands(self, commands, check_rc=True):
-        """Run list of commands on remote device and return results
-        """
-        connection = self._connection_obj
-        try:
-            response = connection.run_commands(commands=commands,
-                                               check_rc=check_rc)
-        except ConnectionError as exc:
-            self._module.fail_json(msg=to_text(exc,
-                                               errors='surrogate_then_replace')
-                                   )
-        return response
+def run_commands(module, commands, check_rc=False):
+    '''
+    Execute command on the switch
+    '''
+    conn = get_connection(module, True)
+    try:
+        return conn.run_commands(commands=commands, check_rc=check_rc)
+    except ConnectionError as exc:
+        module.fail_json(msg=to_text(exc))
 
 
 class ArubaAnsibleModule:
+    '''
+    Aruba ansible mdule wrapper class
+    '''
 
     def __init__(self, module_args, store_config=True):
+        '''
+        module init function
+        '''
 
         self.module = AnsibleModule(
             argument_spec=module_args,
@@ -163,23 +297,34 @@ class ArubaAnsibleModule:
                                       "firmware version is 10.03")
 
     def get_switch_platform(self):
+        '''
+        Returns the switch platform
+        '''
         platform_url = '/rest/v1/system?attributes=platform_name'
         platform = get(self.module, platform_url)
         self.switch_platform = platform["platform_name"]
 
     def get_switch_firmware_version(self):
+        '''
+        Returns the switch firmware
+        '''
         firmware_url = '/rest/v1/firmware'
         firmware_versions = get(self.module, firmware_url)
         self.switch_current_firmware = firmware_versions["current_version"]
 
     def get_firmware_upgrade_status(self):
+        '''
+        Returns the firmware upgrade status
+        '''
         fimrware_status_url = '/rest/v1/firmware/status'
         firmware_update_status = get(self.module, fimrware_status_url)
         return firmware_update_status
 
     def get_switch_config(self, config_name='running-config',
                           store_config=True):
-
+        '''
+        Returns the switch config
+        '''
         config_url = '/rest/v1/fullconfigs/{cfg}'.format(cfg=config_name)
 
         running_config = get(self.module, config_url)
@@ -192,7 +337,9 @@ class ArubaAnsibleModule:
 
     def copy_switch_config_to_remote_location(self, config_name, config_type,
                                               destination, vrf):
-
+        '''
+        TFTP switch config to TFTP server
+        '''
         config_url = ('/rest/v1/fullconfigs/'
                       '{cfg}?to={dest}&type={type}'
                       '&vrf={vrf}'.format(cfg=config_name,
@@ -205,7 +352,9 @@ class ArubaAnsibleModule:
 
     def tftp_switch_config_from_remote_location(self, config_file_location,
                                                 config_name, vrf):
-
+        '''
+        TFTP switch config from TFTP server
+        '''
         config_url = ('/rest/v1/fullconfigs/'
                       '{cfg}?from={dest}&vrf={vrf}'
                       ''.format(cfg=config_name,
@@ -216,14 +365,18 @@ class ArubaAnsibleModule:
         return
 
     def upload_switch_config(self, config, config_name='running-config'):
-
+        '''
+        Upload switch config
+        '''
         config_url = '/rest/v1/fullconfigs/{cfg}'.format(cfg=config_name)
         config_json = json.dumps(config)
         put(self.module, config_url, config_json)
         return
 
     def update_switch_config(self):
-
+        '''
+        Update switch config
+        '''
         self.result = dict(changed=self.changed, warnings=self.warnings)
 
         if self.original_config != self.running_config:
