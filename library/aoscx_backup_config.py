@@ -119,7 +119,7 @@ def main():
                     "the configuration from the switch")
         tftp_path_replace = tftp_path.replace("/", "%2F")
         tftp_path_encoded = tftp_path_replace.replace(":", "%3A")
-        if config_name != 'running-config' or config_name != 'startup-config':
+        if config_name != 'running-config' and config_name != 'startup-config':
             aruba_ansible_module.module.fail_json(
                 msg="Only running-config or "
                     "startup-config can be backed-up using TFTP")
