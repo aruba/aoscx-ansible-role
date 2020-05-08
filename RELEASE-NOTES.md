@@ -1,3 +1,17 @@
+# 2.1.1
+
+## Notable Changes
+* Adds logic for initial password handling
+* This release includes new functionality in the connection plugin that handles if the device is in a default 
+state that requires the admin user password to be set. If the admin password needs to be set the aoscx_role will 
+set the user password to be what's defined in the Ansible inventory for ansible_password.
+
+## Known Issues
+* On 10.4 CX core and aggregation platforms (8400,8325,8320) REST API is not enabled for read/write access by default. The 
+workaround to set the admin password on a default switch is to use the SSH modules 
+[aoscx_command](https://github.com/aruba/aoscx-ansible-role/blob/master/docs/aoscx_command.md) or 
+[aoscx_config](https://github.com/aruba/aoscx-ansible-role/blob/master/docs/aoscx_config.md) in a playbook and the connection module will handle setting the initial password.
+
 # 2.1.0
 
 ## Notable Changes
