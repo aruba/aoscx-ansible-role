@@ -97,10 +97,11 @@ class HttpApi(HttpApiBase):
     def handle_response(self, response, response_data):
         response_data_json = ''
         try:
-            response_data_json = json.loads(to_text(response_data.getvalue()))
+            response_data_json = \
+                json.loads(to_text(response_data.getvalue().decode()))
         except ValueError:
+            response_data = response_data.read().decode()
 
-            response_data = response_data.read()
         if isinstance(response, HTTPError):
             if response_data:
                 if 'errors' in response_data:
@@ -122,3 +123,47 @@ class HttpApi(HttpApiBase):
         result = {}
 
         return json.dumps(result)
+
+    def handle_httperror(self, exc):
+        """Method for dealing with HTTP error codes.
+        """
+        if exc.code == 401:
+            if self.connection._auth:
+                # Stored auth appears to be invalid, clear and retry
+                self.connection._auth = None
+                self.login(self.connection.get_option('remote_user'),
+                           self.connection.get_option('password'))
+                return True
+
+            # Unauthorized and there's no token
+
+            # If the out-of-the-box values were already tried, return.
+            if getattr(self, "zeroize_auth", False):
+                return exc
+
+            setattr(self, "zeroize_auth", True)
+
+            # Try to login with the out-of-the-box values of a zeroized
+            # device, a zeroized device uses a blank password and won't
+            # accept any operation on REST until a new password is set.
+            login_path = '/rest/v1/login?username={}'.format(
+                self.connection.get_option('remote_user'))
+
+            login_resp, _ = self.connection.send(
+                data=None, path=login_path, method='POST')
+
+            if login_resp.code == 268:
+                # Login was succesfull, but the session is restricted, the
+                # administrator password must be set.
+                admin_path = '/rest/v1/system/users/admin'
+                data = {
+                    "password": self.connection.get_option('password')
+                }
+
+                admin_response, _ = self.connection.send(
+                    data=json.dumps(data), path=admin_path, method='PUT')
+
+                if admin_response.code == 200:
+                    return login_resp
+
+        return exc
