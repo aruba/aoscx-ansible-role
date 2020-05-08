@@ -18,10 +18,11 @@ from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.network.common.utils import to_list, ComplexList
 from ansible.module_utils.connection import exec_command, Connection, ConnectionError
+from ansible.module_utils.aoscx_ztp import connect_ztp_device
 
 _DEVICE_CONNECTION = None
-
 _DEVICE_CONFIGS = {}
+_DEVICE_ZTP = False
 
 aoscx_provider_spec = {
     'host': dict(),
@@ -98,6 +99,19 @@ def load_config(module, commands):
 
     exec_command(module, 'end')
 
+def exec_command(module, command):
+    '''
+    Execute command on the switch
+    '''
+    conn = create_ssh_connection(module)
+    try:
+        out = conn.exec_command(command)
+    except ConnectionError as exc:
+        code = getattr(exc, 'code', 1)
+        msg = getattr(exc, 'err', exc)
+        return code, '', to_text(msg, errors='surrogate_then_replace')
+
+    return 0, out, ''
 
 def sanitize(resp):
     '''
@@ -178,6 +192,22 @@ class HttpApi:
             raise ConnectionError(error_text, code=res.status_code)
         return res
 
+
+def create_ssh_connection(module):
+    connection = Connection(module._socket_path)
+
+    global _DEVICE_ZTP
+    if not _DEVICE_ZTP:
+        # For zeroize devices, configure authentication
+        connect_ztp_device(
+            connection.get_option('host'),
+            connection.get_option('remote_user'),
+            connection.get_option('password'))
+        _DEVICE_ZTP = True
+
+    return connection
+
+
 def get_connection(module, is_cli=False):
     '''
     Returns the connection plugin
@@ -185,15 +215,13 @@ def get_connection(module, is_cli=False):
     global _DEVICE_CONNECTION
     if not _DEVICE_CONNECTION:
         if is_cli:
-            if hasattr(module, '_aoscx_connection'):
-                _DEVICE_CONNECTION = module._aoscx_connection
-                return module._aoscx_connection
-            module._aoscx_connection = Connection(module._socket_path)
+            if not hasattr(module, '_aoscx_connection'):
+                module._aoscx_connection = create_ssh_connection(module)
             _DEVICE_CONNECTION = module._aoscx_connection
-            return module._aoscx_connection
         else:
             conn = HttpApi(module)
-        _DEVICE_CONNECTION = conn
+            _DEVICE_CONNECTION = conn
+
     return _DEVICE_CONNECTION
 
 
