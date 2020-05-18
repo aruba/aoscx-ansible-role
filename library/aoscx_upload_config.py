@@ -5,6 +5,11 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
@@ -54,14 +59,14 @@ EXAMPLES = '''
 - name: Copy Running Config from local JSON file as JSON
   aoscx_upload_config:
     config_name: 'running-config'
-    remote_config_file_tftp_path: '/user/admin/running.json'
+    config_json: '/user/admin/running.json'
 
 - name: Copy Running Config from TFTP server as JSON
   aoscx_upload_config:
     config_name: 'running-config'
     remote_config_file_tftp_path: 'tftp://192.168.1.2/running.json'
     vrf: 'mgmt'
-   
+
 - name: Copy CLI from TFTP Server to Running Config
   aoscx_upload_config:
     config_name: 'running-config'
@@ -114,7 +119,11 @@ def main():
         aruba_ansible_module.tftp_switch_config_from_remote_location(
             tftp_path_encoded, config_name, vrf)
     else:
-        if config_json is None:
+        if config_json:
+            with open(config_json) as json_file:
+                config_json = json.load(json_file)
+
+        if config_file:
             with open(config_file) as json_file:
                 config_json = json.load(json_file)
 

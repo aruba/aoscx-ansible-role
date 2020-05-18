@@ -51,8 +51,8 @@ EXAMPLES = '''
 
 RETURN = r''' # '''
 
+from ansible.module_utils.vrfs.aoscx_vrf import VRF
 from ansible.module_utils.aoscx import ArubaAnsibleModule
-from ansible.module_utils.aoscx_vrf import VRF
 
 
 def main():

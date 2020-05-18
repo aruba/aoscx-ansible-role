@@ -6,15 +6,9 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-DOCUMENTATION = """
----
-author: Aruba Networks (@ArubaNetworks)
-network_cli: aoscx
-short_description: Use CLI to run commands to CX devices
-description:
-  - This ArubaOSCX plugin provides CLI operations with ArubaOS-CX Devices
-version_added: "2.9"
-"""
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
 
 import json
 import re
@@ -30,6 +24,8 @@ from ansible.plugins.cliconf import CliconfBase, enable_mode
 class Cliconf(CliconfBase):
     '''
     Cliconf class for AOS-CX
+
+    This ArubaOSCX plugin provides CLI operations with ArubaOS-CX Devices
     '''
 
     def __init__(self, *args, **kwargs):
@@ -44,8 +40,8 @@ class Cliconf(CliconfBase):
         Get the switch config
         '''
         if source not in ('running', 'startup'):
-            return self.invalid_params("fetching configuration from {} is not"
-                                       " supported".format(source))
+            return self.invalid_params("fetching configuration from {source} is"
+                                       " not supported".format(source=source))
         if source == 'running':
             cmd = 'show running-config all'
         else:

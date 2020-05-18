@@ -5,16 +5,23 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
 
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+from ansible.module_utils._text import to_text
+from ansible.module_utils.basic import missing_required_lib
 from contextlib import closing
 import time
-import paramiko
+import traceback
 
-from ansible.utils.display import Display
-from ansible.module_utils._text import to_text
-
-display = Display(verbosity=4)
+PARAMIKO_IMP_ERR = None
+try:
+    import paramiko
+    HAS_PARAMIKO_LIB = True
+except ImportError:
+    HAS_PARAMIKO_LIB = False
+    PARAMIKO_IMP_ERR = traceback.format_exc()
 
 CHANNEL_TIMEOUT = 8
 READ_TIMEOUT = 10
@@ -26,7 +33,7 @@ CONFIRM_PASSWORD_MSG = 'Confirm new password:'
 SHELL_PROMPT = '#'
 
 
-def connect_ztp_device(hostname, username, password):
+def connect_ztp_device(module, hostname, username, password):
     """Connects to a ZTP device using SSH and configures authentication.
 
     The function tries to login with the out-of-the-box values of a zeroized
@@ -39,10 +46,15 @@ def connect_ztp_device(hostname, username, password):
     already configured, or there is an error with the connection parameters,
     the function logs the error and returns.
 
+    :param module: Ansible module.
     :param hostname: The Switch to connect to.
     :param username: The username to authenticate as.
     :param password: A password to use for authentication.
     """
+
+    if not HAS_PARAMIKO_LIB:
+        module.fail_json(msg=missing_required_lib(
+            "paramiko"), exception=PARAMIKO_IMP_ERR)
 
     with closing(paramiko.SSHClient()) as ssh_client:
 
@@ -82,11 +94,10 @@ def connect_ztp_device(hostname, username, password):
             wait_for_channel_msg(shell_channel, SHELL_PROMPT)
 
         except paramiko.ssh_exception.AuthenticationException as e:
-            display.vvvv(
-                "Unable to authenticate: {0}".format(to_text(e)), "ztp")
+            module.log("Unable to authenticate: {0}".format(to_text(e)))
 
         except Exception as e:
-            display.vvvv(to_text(e), "ztp")
+            module.log(to_text(e))
 
 
 def wait_for_channel_msg(shell_channel, msg):

@@ -7,13 +7,14 @@ description: This module creates a new checkpoint or copies an existing checkpoi
   source_config:
     description: Name of the source configuration from which checkpoint needs
       to be created or copied.
+    type: str
     required: False
     default: 'running-config'
 
   destination_config:
     description: Name of the destination configuration or name of checkpoint.
+    type: str
     required: False
-    default: 'startup-config'
 ```
 
 ##### EXAMPLES

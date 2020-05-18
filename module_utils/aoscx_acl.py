@@ -97,7 +97,7 @@ class ACL:
             if "cfg_aces" not in aruba_ansible_module.running_config["ACL"][acl_index].keys():  # NOQA
                 aruba_ansible_module.running_config["ACL"][acl_index]["cfg_aces"] = {}  # NOQA
 
-            if aruba_ansible_module.running_config["ACL"][acl_index]["cfg_aces"].has_key(acl_entry_sequence_number):  # NOQA
+            if 'acl_entry_sequence_number' in aruba_ansible_module.running_config["ACL"][acl_index]["cfg_aces"].keys():  # NOQA
                 if aruba_ansible_module.running_config["ACL"][acl_index]["cfg_aces"][acl_entry_sequence_number] != acl_entry_details:  # NOQA
                     aruba_ansible_module.running_config["ACL"][acl_index]["cfg_aces"][acl_entry_sequence_number] = acl_entry_details  # NOQA
                     aruba_ansible_module.running_config["ACL"][acl_index]["cfg_version"] = randint(-900719925474099, 900719925474099)  # NOQA

@@ -7,23 +7,26 @@ Facts will be printed out when the playbook execution is done with increased ver
 ```YAML
   gather_subset: 
     description: 
-      - Retrieve a subset of all device information. This can be a
-        single category or it can be a list. Warning: leaving this field blank
+      - Retrieve a subset of all device information. This can be a single
+        category or it can be a list. As warning, leaving this field blank
         returns all facts, which may be an intensive process.
-    options: ['software_info', 'software_images', 'host_name', 'platform_name',
+    choices: ['software_info', 'software_images', 'host_name', 'platform_name',
         'management_interface', 'software_version', 'config', 'fans',
         'power_supplies', 'product_info', 'physical_interfaces',
         'resource_utilization', 'domain_name']
     required: False
-    default: '!config'
+    default: ['software_info', 'software_images', 'host_name', 'platform_name',
+        'management_interface', 'software_version', 'fans', 'power_supplies',
+        'product_info', 'physical_interfaces', 'resource_utilization',
+        'domain_name']
     type: list
-    
+
   gather_network_resources: 
     description:
       - Retrieve vlan, interface, or vrf information. This can be a single
         category or it can be a list. Leaving this field blank returns all
         all interfaces, vlans, and vrfs.
-    options: ['interfaces', 'vlans', 'vrfs']
+    choices: ['interfaces', 'vlans', 'vrfs']
     required: False
     type: list
 ```

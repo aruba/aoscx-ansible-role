@@ -20,12 +20,6 @@ description: This module uploads a firmware image onto the switch stored locally
       ex) http://192.168.1.2:8000/TL_10_04_0030A.swi"
     type: str
     required: false
-  config_type:
-    description: Configuration type to be downloaded, JSON or CLI version of the config.
-    type: str
-    choices: ['json', 'cli']
-    default: 'json'
-    required: false
   vrf:
     description: VRF to be used to contact HTTP server, required if remote_firmware_file_path is provided
     type: str

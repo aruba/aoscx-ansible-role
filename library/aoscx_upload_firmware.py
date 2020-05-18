@@ -5,6 +5,11 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
@@ -36,12 +41,6 @@ options:
       must be reachable through provided vrf
       ex) http://192.168.1.2:8000/TL_10_04_0030A.swi"
     type: str
-    required: false
-  config_type:
-    description: Configuration type to be downloaded, JSON or CLI version of the config.
-    type: str
-    choices: ['json', 'cli']
-    default: 'json'
     required: false
   vrf:
     description: VRF to be used to contact HTTP server, required if remote_firmware_file_path is provided

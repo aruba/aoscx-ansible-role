@@ -5,8 +5,10 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -43,15 +45,16 @@ options:
       from commands[1], and so on.  
     required: False
     type: list
-    
+    aliases: ['waitfor']
+
   match:
     description: Specifies whether all conditions in 'wait_for' must be satisfied or if just 
       any one condition can be satisfied. To be used with 'wait_for'.
     default: 'all'
-    choice: ['any', 'all']
+    choices: ['any', 'all']
     required: False
     type: str
-        
+
   retries:
     description: Maximum number of retries to check for the expected prompt.
     default: 10
@@ -66,17 +69,71 @@ options:
 
   output_file:
     description: Full path of the local system file to which commands' results will be output.
-    The directory must exist, but if the file doesn't exist, it will be created.
+      The directory must exist, but if the file doesn't exist, it will be created.
     required: False
     type: str
 
   output_file_format:
     description: Format to output the file in, either JSON or plain text.
-    To be used with 'output_file'.
+      To be used with 'output_file'.
     default: json
     choices: ['json', 'plain-text']
     required: False
     type: str
+
+  provider:
+    description: A dict object containing connection details.
+    suboptions:
+      auth_pass:
+        description:
+          - Specifies the password to use if required to enter privileged mode on the
+            remote device. If authorize is false, then this argument does nothing.
+            If the value is not specified in the task, the value of  environment variable
+            ANSIBLE_NET_AUTH_PASS will be used instead.
+        type: str
+      authorize:
+        description:
+          - Instructs the module to enter privileged mode on the remote device before
+            sending any commands. If not specified, the device will attempt to execute
+            all commands in non-privileged mode. If the value is not specified in the
+            task, the value of environment variable ANSIBLE_NET_AUTHORIZE will be used instead.
+        type: bool
+      host:
+        description:
+          - Specifies the DNS host name or address for connecting to the remote device over the
+            specified transport. The value of host is used as the destination address for the transport.
+        required: True
+        type: str
+      password:
+        description:
+          - Specifies the password to use to authenticate the connection to the remote device.
+            This value is used to authenticate the SSH session. If the value is not specified
+            in the task, the value of environment variable ANSIBLE_NET_PASSWORD will be used instead.
+        type: str
+      port:
+        description:
+          - Specifies the port to use when building the connection to the remote device.
+        type: int
+      ssh_keyfile:
+        description:
+          - Specifies the SSH key to use to authenticate the connection to the remote device.
+            This value is the path to the key used to authenticate the SSH session. If the value
+            is not specified in the task, the value of environment variable ANSIBLE_NET_SSH_KEYFILE
+            will be used instead.
+        type: path
+      timeout:
+        description:
+          - Specifies the timeout in seconds for communicating with the network device for either
+            connecting or sending commands. If the timeout is exceeded before the operation is completed,
+            the module will error.
+        type: int
+      username:
+        description:
+          - Configures the username to use to authenticate the connection to the remote device.
+            This value is used to authenticate the SSH session. If the value is not specified in the task,
+            the value of environment variable ANSIBLE_NET_USERNAME will be used instead.
+        type: str
+    type: dict
 '''  # NOQA
 
 EXAMPLES = '''
@@ -177,7 +234,7 @@ def main():
     argument_spec = dict(
         commands=dict(type='list', required=True),
         wait_for=dict(type='list', aliases=['waitfor']),
-        match=dict(default='all', choices=['all', 'any']),
+        match=dict(default='all', choices=['any', 'all']),
         retries=dict(default=10, type='int'),
         interval=dict(default=1, type='int'),
         output_file=dict(type='str', default=None),
@@ -191,9 +248,7 @@ def main():
 
     result = {'changed': False, 'warnings': warnings}
     module = AnsibleModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True
-        )
+        argument_spec=argument_spec, supports_check_mode=True)
 
     commands = parse_commands(module, warnings)
     wait_for = module.params['wait_for'] or list()

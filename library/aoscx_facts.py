@@ -6,6 +6,10 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
@@ -25,25 +29,56 @@ options:
 
   gather_subset: 
     description: 
-      - Retrieve a subset of all device information. This can be a
-        single category or it can be a list. Warning: leaving this field blank
+      - Retrieve a subset of all device information. This can be a single
+        category or it can be a list. As warning, leaving this field blank
         returns all facts, which may be an intensive process.
-    options: ['software_info', 'software_images', 'host_name', 'platform_name',
+    choices: ['software_info', 'software_images', 'host_name', 'platform_name',
         'management_interface', 'software_version', 'config', 'fans',
         'power_supplies', 'product_info', 'physical_interfaces',
         'resource_utilization', 'domain_name']
     required: False
-    default: '!config'
+    default: ['software_info', 'software_images', 'host_name', 'platform_name',
+        'management_interface', 'software_version', 'fans', 'power_supplies',
+        'product_info', 'physical_interfaces', 'resource_utilization',
+        'domain_name']
     type: list
-    
+
   gather_network_resources: 
     description:
       - Retrieve vlan, interface, or vrf information. This can be a single
         category or it can be a list. Leaving this field blank returns all
         all interfaces, vlans, and vrfs.
-    options: ['interfaces', 'vlans', 'vrfs']
+    choices: ['interfaces', 'vlans', 'vrfs']
     required: False
     type: list
+
+  provider:
+    description: A dict object containing connection details.
+    suboptions:
+      host:
+        description:
+          - Specifies the DNS host name or address for connecting to the remote device over the
+            specified transport. The value of host is used as the destination address for the transport.
+        required: True
+        type: str
+      password:
+        description:
+          - Specifies the password to use to authenticate the connection to the remote device.
+            This value is used to authenticate the SSH session. If the value is not specified
+            in the task, the value of environment variable ANSIBLE_NET_PASSWORD will be used instead.
+        type: str
+      port:
+        description:
+          - Specifies the port to use when building the connection to the remote device.
+        type: int
+      username:
+        description:
+          - Configures the username to use to authenticate the connection to the remote device.
+            This value is used to authenticate the SSH session. If the value is not specified in the task,
+            the value of environment variable ANSIBLE_NET_USERNAME will be used instead.
+        type: str
+    type: dict
+
 '''  # NOQA
 
 EXAMPLES = '''
@@ -124,9 +159,9 @@ ansible_net_mgmt_intf_status:
   type: dict
 '''
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.facts.facts import Facts
 from ansible.module_utils.aoscx import aoscx_http_argument_spec, get_connection
+from ansible.module_utils.basic import AnsibleModule
 
 
 def main():
@@ -135,14 +170,32 @@ def main():
     :returns: ansible_facts
     """
     argument_spec = {
-        'gather_subset': dict(default=['!config'], type='list'),
-        'gather_network_resources': dict(type='list'),
+        'gather_subset': dict(default=['software_info', 'software_images',
+                                       'host_name', 'platform_name',
+                                       'management_interface',
+                                       'software_version', 'fans',
+                                       'power_supplies', 'product_info',
+                                       'physical_interfaces',
+                                       'resource_utilization', 'domain_name'],
+                              type='list',
+                              choices=['software_info', 'software_images',
+                                       'host_name', 'platform_name',
+                                       'management_interface',
+                                       'software_version',
+                                       'config', 'fans', 'power_supplies',
+                                       'product_info', 'physical_interfaces',
+                                       'resource_utilization', 'domain_name']),
+        'gather_network_resources': dict(type='list',
+                                         choices=['interfaces', 'vlans',
+                                                  'vrfs'])
     }
+
     argument_spec.update(aoscx_http_argument_spec)
+
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
 
-    module._connection = get_connection(module) #noqa
+    module._connection = get_connection(module)  # noqa
 
     warnings = []
     if module.params["gather_subset"] == "!config":

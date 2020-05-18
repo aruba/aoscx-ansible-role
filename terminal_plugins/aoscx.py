@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
@@ -16,12 +16,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+
 from ansible.plugins.terminal import TerminalBase
 from ansible.errors import AnsibleConnectionFailure
 from ansible.utils.display import Display
 import re
 
 display = Display()
+
 
 class TerminalModule(TerminalBase):
     '''
@@ -40,9 +46,9 @@ class TerminalModule(TerminalBase):
         Tasks to be executed immediately after connecting to switch.
         '''
         try:
-            self._exec_cli_command(b'terminal length 0')
+            self._exec_cli_command(b'no page')
         except AnsibleConnectionFailure:
-            raise AnsibleConnectionFailure('unable to set terminal parameters')
+            raise AnsibleConnectionFailure('unable to remove terminal paging')
 
         try:
             self._exec_cli_command(b'terminal width 512')
@@ -53,7 +59,6 @@ class TerminalModule(TerminalBase):
         except AnsibleConnectionFailure:
             display.display('WARNING: Unable to set terminal width, '
                             'command responses may be truncated')
-
 
     def on_become(self, passwd=None):
         '''

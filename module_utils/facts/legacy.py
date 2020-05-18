@@ -1,16 +1,22 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
 from ansible.module_utils.aoscx import get
+
 
 class FactsBase(object):
     '''
     FactsBase class
     '''
+
     def __init__(self, module):
         self._module = module
         self.warnings = list()
@@ -117,6 +123,7 @@ class SoftwareVersion(FactsBase):
         self._url = '/rest/v10.04/system?attributes=software_version'
         super(SoftwareVersion, self).populate()
 
+
 class Config(FactsBase):
     '''
     Config facts class
@@ -178,7 +185,7 @@ class SubSystemFactsBase(FactsBase):
         for sub_system in self.data.keys():
             sub_system_details = self.data[sub_system]
 
-            if self._fact_name in  sub_system_details.keys():
+            if self._fact_name in sub_system_details.keys():
 
                 output_data[sub_system] = sub_system_details[self._fact_name]
 

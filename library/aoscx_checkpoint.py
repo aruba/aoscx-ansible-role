@@ -5,6 +5,11 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
     'status': ['preview'],
@@ -19,17 +24,18 @@ short_description: Creates a new checkpoint or copies an existing checkpoint to 
 description:
   - This module creates a new checkpoint or copies existing checkpoint
     to the running or startup config of an AOS-CX switch.
-author:
-  - Aruba Networks
+author: Aruba Networks (@ArubaNetworks)
 options:
   source_config:
     description: Name of the source configuration from which checkpoint needs
       to be created or copied.
+    type: str
     required: False
     default: 'running-config'
 
   destination_config:
     description: Name of the destination configuration or name of checkpoint.
+    type: str
     required: False
     default: 'startup-config'
 '''

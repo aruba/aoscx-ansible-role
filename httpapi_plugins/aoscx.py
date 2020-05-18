@@ -7,8 +7,8 @@
 
 
 from __future__ import (absolute_import, division, print_function)
-
 __metaclass__ = type
+
 
 DOCUMENTATION = """
 ---
@@ -146,13 +146,13 @@ class HttpApi(HttpApiBase):
             # Try to login with the out-of-the-box values of a zeroized
             # device, a zeroized device uses a blank password and won't
             # accept any operation on REST until a new password is set.
-            login_path = '/rest/v1/login?username={}'.format(
-                self.connection.get_option('remote_user'))
+            login_path = '/rest/v1/login?username={username}'.format(
+                username=self.connection.get_option('remote_user'))
 
-            login_resp, _ = self.connection.send(
+            login_resp = self.connection.send(
                 data=None, path=login_path, method='POST')
 
-            if login_resp.code == 268:
+            if login_resp[0].code == 268:
                 # Login was succesfull, but the session is restricted, the
                 # administrator password must be set.
                 admin_path = '/rest/v1/system/users/admin'
@@ -160,10 +160,10 @@ class HttpApi(HttpApiBase):
                     "password": self.connection.get_option('password')
                 }
 
-                admin_response, _ = self.connection.send(
+                admin_response = self.connection.send(
                     data=json.dumps(data), path=admin_path, method='PUT')
 
-                if admin_response.code == 200:
-                    return login_resp
+                if admin_response[0].code == 200:
+                    return login_resp[0]
 
         return exc

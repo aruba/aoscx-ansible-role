@@ -1,9 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
 from ansible.module_utils.aoscx import get
 from ansible.module_utils.facts.interfaces import InterfacesFacts
@@ -14,6 +18,7 @@ from ansible.module_utils.facts.legacy import Default, SoftwareInfo, \
 from ansible.module_utils.facts.vlans import VlansFacts
 from ansible.module_utils.facts.vrfs import VrfsFacts
 from ansible.module_utils.network.common.facts.facts import FactsBase
+
 
 FACT_LEGACY_SUBSETS = dict(
     default=Default,
@@ -48,11 +53,9 @@ class Facts(FactsBase):
 
     def get_facts(self, legacy_facts_type=None, resource_facts_type=None,
                   data=None):
-
         '''
         Returns the facts for aoscx
         '''
-
 
         if data is None:
             data = get_switch_running_config(self._module)
@@ -66,8 +69,8 @@ class Facts(FactsBase):
 
         return self.ansible_facts, self._warnings
 
-def get_switch_running_config(module):
 
+def get_switch_running_config(module):
     '''
     Gets the switch running-config
     '''

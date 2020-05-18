@@ -9,16 +9,26 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+
 import copy
 import json
-import requests
 import re
+import traceback
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.network.common.utils import to_list, ComplexList
 from ansible.module_utils.connection import exec_command, Connection, ConnectionError
 from ansible.module_utils.aoscx_ztp import connect_ztp_device
+
+REQUESTS_IMP_ERR = None
+try:
+    import requests
+    HAS_REQUESTS_LIB = True
+except ImportError:
+    HAS_REQUESTS_LIB = False
+    REQUESTS_IMP_ERR = traceback.format_exc()
 
 _DEVICE_CONNECTION = None
 _DEVICE_CONFIGS = {}
@@ -50,17 +60,20 @@ aoscx_http_argument_spec = {
     'provider': dict(type='dict', options=aoscx_http_provider_spec, removed_in_version=2.14),
 }
 
+
 def get_provider_argspec():
     '''
     Returns the provider argument specification
     '''
     return aoscx_provider_spec
 
+
 def check_args(module, warnings):
     '''
     Checks the argument
     '''
     pass
+
 
 def get_config(module, flags=None):
     '''
@@ -77,10 +90,12 @@ def get_config(module, flags=None):
     except KeyError:
         rc, out, err = exec_command(module, cmd)
         if rc != 0:
-            module.fail_json(msg='unable to retrieve current config', stderr=to_text(err, errors='surrogate_then_replace'))
+            module.fail_json(msg='unable to retrieve current config', stderr=to_text(
+                err, errors='surrogate_then_replace'))
         cfg = to_text(out, errors='surrogate_then_replace').strip()
         _DEVICE_CONFIGS[cmd] = cfg
         return cfg
+
 
 def load_config(module, commands):
     '''
@@ -88,16 +103,19 @@ def load_config(module, commands):
     '''
     rc, out, err = exec_command(module, 'configure terminal')
     if rc != 0:
-        module.fail_json(msg='unable to enter configuration mode', err=to_text(out, errors='surrogate_then_replace'))
+        module.fail_json(msg='unable to enter configuration mode',
+                         err=to_text(out, errors='surrogate_then_replace'))
 
     for command in to_list(commands):
         if command == 'end':
             continue
         rc, out, err = exec_command(module, command)
         if rc != 0:
-            module.fail_json(msg=to_text(err, errors='surrogate_then_replace'), command=command, rc=rc)
+            module.fail_json(msg=to_text(
+                err, errors='surrogate_then_replace'), command=command, rc=rc)
 
     exec_command(module, 'end')
+
 
 def exec_command(module, command):
     '''
@@ -113,6 +131,7 @@ def exec_command(module, command):
 
     return 0, out, ''
 
+
 def sanitize(resp):
     '''
     Sanitizes the string to remove additiona white spaces
@@ -123,10 +142,12 @@ def sanitize(resp):
         cleaned.append(re.sub(r"^\s+", " ", line))
     return '\n'.join(cleaned).strip()
 
+
 class HttpApi:
     '''
     Module utils class for AOS-CX HTTP API connection
     '''
+
     def __init__(self, module):
         self._module = module
         self._connection_obj = None
@@ -147,22 +168,26 @@ class HttpApi:
         res = self._connection.send_request(data=data, method='GET', path=url)
         return res
 
-    def put(self, url, data=None, headers={}):
+    def put(self, url, data=None, headers=None):
         '''
         PUT REST call
         '''
+        if headers is None:
+            headers = {}
         return self._connection.send_request(data=data, method='PUT', path=url,
                                              headers=headers)
 
-    def post(self, url, data=None, headers={}):
+    def post(self, url, data=None, headers=None):
         '''
         POST REST call
         '''
+        if headers is None:
+            headers = {}
         return self._connection.send_request(data=data, method='POST',
                                              path=url,
                                              headers=headers)
 
-    def file_upload(self, url, files, headers={}):
+    def file_upload(self, url, files, headers=None):
         """
         Workaround with requests library for lack of support in httpapi for
         multipart POST
@@ -170,6 +195,13 @@ class HttpApi:
         ansible/blob/devel/lib/ansible/plugins/connection/httpapi.py
         ansible/blob/devel/lib/ansible/module_utils/urls.py
         """
+
+        if not HAS_REQUESTS_LIB:
+            self._module.fail_json(msg=missing_required_lib(
+                "requests"), exception=REQUESTS_IMP_ERR)
+
+        if headers is None:
+            headers = {}
         connection_details = self._connection.get_connection_details()
         if 'auth'in connection_details.keys():
             headers.update(connection_details['auth'])
@@ -200,6 +232,7 @@ def create_ssh_connection(module):
     if not _DEVICE_ZTP:
         # For zeroize devices, configure authentication
         connect_ztp_device(
+            module,
             connection.get_option('host'),
             connection.get_option('remote_user'),
             connection.get_option('password'))
@@ -234,34 +267,40 @@ def get(module, url, data=None):
     return res
 
 
-def put(module, url, data=None, headers={}):
+def put(module, url, data=None, headers=None):
     '''
     Perform PUT REST call
     '''
+    if headers is None:
+        headers = {}
     conn = get_connection(module)
     res = conn.put(url, data, headers)
     return res
 
 
-def post(module, url, data=None, headers={}):
+def post(module, url, data=None, headers=None):
     '''
     Perform POST REST call
     '''
+    if headers is None:
+        headers = {}
     conn = get_connection(module)
     res = conn.post(url, data, headers)
     return res
 
 
-def file_upload(module, url, files, headers={}):
+def file_upload(module, url, files, headers=None):
     '''
     Upload File through REST
     '''
+    if headers is None:
+        headers = {}
     conn = get_connection(module)
     res = conn.file_upload(url, files, headers)
     return res
 
-def to_command(module, commands):
 
+def to_command(module, commands):
     '''
     Convert command to ComplexList
     '''
@@ -275,6 +314,7 @@ def to_command(module, commands):
     ), module)
 
     return transform(to_list(commands))
+
 
 def run_commands(module, commands, check_rc=False):
     '''

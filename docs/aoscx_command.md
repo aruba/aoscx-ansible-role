@@ -46,15 +46,16 @@ just configuration commands, aoscx_config.
       from commands[1], and so on.  
     required: False
     type: list
-    
+    aliases: ['waitfor']
+
   match:
     description: Specifies whether all conditions in 'wait_for' must be satisfied or if just 
       any one condition can be satisfied. To be used with 'wait_for'.
     default: 'all'
-    choice: ['any', 'all']
+    choices: ['any', 'all']
     required: False
     type: str
-        
+
   retries:
     description: Maximum number of retries to check for the expected prompt.
     default: 10
@@ -69,13 +70,13 @@ just configuration commands, aoscx_config.
 
   output_file:
     description: Full path of the local system file to which commands' results will be output.
-    The directory must exist, but if the file doesn't exist, it will be created.
+      The directory must exist, but if the file doesn't exist, it will be created.
     required: False
     type: str
 
   output_file_format:
     description: Format to output the file in, either JSON or plain text.
-    To be used with 'output_file'.
+      To be used with 'output_file'.
     default: json
     choices: ['json', 'plain-text']
     required: False

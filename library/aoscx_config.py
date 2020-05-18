@@ -5,9 +5,10 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
 
+from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -33,6 +34,7 @@ options:
         These commands must correspond with what would be found in the device's running-config.
     required: False
     type: list
+    aliases: ['commands']
 
   parents:
     description:
@@ -50,7 +52,7 @@ options:
         indentation as a live switch config. The operation is purely additive, as it doesn't remove
         any lines that are present in the existing running-config, but not in the source config.
     required: False
-    type: str
+    type: path
 
   before:
     description:
@@ -117,7 +119,7 @@ options:
         description:
           - Path to directory in which the backup file should reside.
         required: False
-        type: str
+        type: path
     type: dict
 
   running_config:
@@ -177,6 +179,60 @@ options:
         which should be set to "intended."
     required: False
     type: str
+
+  provider:
+    description: A dict object containing connection details.
+    suboptions:
+      auth_pass:
+        description:
+          - Specifies the password to use if required to enter privileged mode on the
+            remote device. If authorize is false, then this argument does nothing.
+            If the value is not specified in the task, the value of  environment variable
+            ANSIBLE_NET_AUTH_PASS will be used instead.
+        type: str
+      authorize:
+        description:
+          - Instructs the module to enter privileged mode on the remote device before
+            sending any commands. If not specified, the device will attempt to execute
+            all commands in non-privileged mode. If the value is not specified in the
+            task, the value of environment variable ANSIBLE_NET_AUTHORIZE will be used instead.
+        type: bool
+      host:
+        description:
+          - Specifies the DNS host name or address for connecting to the remote device over the
+            specified transport. The value of host is used as the destination address for the transport.
+        required: True
+        type: str
+      password:
+        description:
+          - Specifies the password to use to authenticate the connection to the remote device.
+            This value is used to authenticate the SSH session. If the value is not specified
+            in the task, the value of environment variable ANSIBLE_NET_PASSWORD will be used instead.
+        type: str
+      port:
+        description:
+          - Specifies the port to use when building the connection to the remote device.
+        type: int
+      ssh_keyfile:
+        description:
+          - Specifies the SSH key to use to authenticate the connection to the remote device.
+            This value is the path to the key used to authenticate the SSH session. If the value
+            is not specified in the task, the value of environment variable ANSIBLE_NET_SSH_KEYFILE
+            will be used instead.
+        type: path
+      timeout:
+        description:
+          - Specifies the timeout in seconds for communicating with the network device for either
+            connecting or sending commands. If the timeout is exceeded before the operation is completed,
+            the module will error.
+        type: int
+      username:
+        description:
+          - Configures the username to use to authenticate the connection to the remote device.
+            This value is used to authenticate the SSH session. If the value is not specified in the task,
+            the value of environment variable ANSIBLE_NET_USERNAME will be used instead.
+        type: str
+    type: dict
 '''  # NOQA
 
 EXAMPLES = '''
@@ -290,6 +346,7 @@ def main():
         filename=dict(),
         dir_path=dict(type='path')
     )
+
     argument_spec = dict(
         src=dict(type='path'),
 
@@ -357,7 +414,7 @@ def main():
                 else:
                     filename = "backup.cfg"
 
-                with open(dir_path+'/'+filename, 'w') as backupfile:
+                with open(dir_path + '/' + filename, 'w') as backupfile:
                     backupfile.write(contents)
                     backupfile.write("\n")
 

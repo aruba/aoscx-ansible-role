@@ -12,6 +12,7 @@ description: This module allows configuration of running-configs on AOS-CX devic
         These commands must correspond with what would be found in the device's running-config.
     required: False
     type: list
+    aliases: ['commands']
 
   parents:
     description:
@@ -29,7 +30,7 @@ description: This module allows configuration of running-configs on AOS-CX devic
         indentation as a live switch config. The operation is purely additive, as it doesn't remove
         any lines that are present in the existing running-config, but not in the source config.
     required: False
-    type: str
+    type: path
 
   before:
     description:
@@ -96,7 +97,7 @@ description: This module allows configuration of running-configs on AOS-CX devic
         description:
           - Path to directory in which the backup file should reside.
         required: False
-        type: str
+        type: path
     type: dict
 
   running_config:
