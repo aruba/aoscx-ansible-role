@@ -39,4 +39,15 @@ description: This modules provides configuration management of Banner on AOS-CX 
   aoscx_banner:
     banner_type: banner_exec
     state: delete
+
+- name: Create a Multi-Line Banner
+  aoscx_banner:
+    banner_type: banner
+    banner: |
+      **************************************************************
+      ************************WELCOME*******************************
+      ***************************TO*********************************
+      *************************AOS-CX*******************************
+      **************************************************************
+      **************************************************************    
 ```
