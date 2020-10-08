@@ -1,3 +1,8 @@
+# 2.1.3
+
+## Notable Changes
+* Minor fix for static route module
+
 # 2.1.1
 
 ## Notable Changes

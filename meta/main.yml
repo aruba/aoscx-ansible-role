@@ -3,6 +3,7 @@ galaxy_info:
   author: Madhusudan Pranav Venugopal
           Tiffany Chiapuzio-Wong
           Yang Liu
+          Derek Wang
   description: Ansible modules for configuring AOS-CX switches. (github repo - https://github.com/aruba/aoscx-ansible-role)
   company: Aruba, a Hewlett Packard Enterprise Company
 
