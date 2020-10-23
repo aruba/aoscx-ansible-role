@@ -10,11 +10,20 @@ Requirements
 
 * Python 2.7 or 3.5+
 * Ansible 2.8.1 or later  
+  * Ansible 2.10+ requires `ansible.netcommon` collection to be installed  
 * Minimum supported AOS-CX firmware version 10.03.
 * Enable REST on your AOS-CX device with the following commands:
     ```
     switch(config)# https-server rest access-mode read-write
     switch(config)# https-server vrf mgmt
+    ```
+* Install all Ansible requirements, with the following command:
+    ```
+    ansible-galaxy install -r requirements.yml
+    ```
+* Install all Python requirements with the following command:
+    ```
+    pip install -r requirements.txt
     ```
   
 SSH/CLI Modules
@@ -219,7 +228,6 @@ issues at all please open an issue on our [Github](https://github.com/aruba/aosc
 
 For more contribution opportunities follow our guidelines outlined in our [CONTRIBUTING.md](https://github.com/aruba/aoscx-ansible-role/blob/master/CONTRIBUTING.md)
 
-
 License
 -------
 
@@ -231,4 +239,5 @@ Author Information
  - Yang Liu (@yliu-aruba)
  - Tiffany Chiapuzio-Wong (@tchiapuziowong)
  - Derek Wang (@derekwangHPEAruba)
+ - Daniel Alvarado Bonilla (@daniel-alvarado)
 
