@@ -8,10 +8,10 @@ This Ansible network role provides a set of platform-dependent configuration
 Requirements
 ------------
 
-* Python 2.7 or 3.5+
+* Python 3 or later
 * Ansible 2.8.1 or later  
   * Ansible 2.10+ requires `ansible.netcommon` collection to be installed  
-* Minimum supported AOS-CX firmware version 10.03.
+* Minimum supported AOS-CX firmware version 10.04.
 * Enable REST on your AOS-CX device with the following commands:
     ```
     switch(config)# https-server rest access-mode read-write
@@ -23,8 +23,26 @@ Requirements
     ```
 * Install all Python requirements with the following command:
     ```
-    pip install -r requirements.txt
+    python3 -m pip install -r <collection_path>/requirements.txt
     ```
+    
+  * After installing the collection using the `ansible-galaxy` command you'll find the path to the collection in the following output:
+    ```bash
+    ubuntu-vm: $ ansible-galaxy collection install ~/arubanetworks-aoscx-3.0.0.tar.gz -f
+    Process install dependency map
+    Starting collection install process
+    Skipping 'ansible.netcommon' as it is already installed
+    Installing 'arubanetworks.aoscx:3.0.0' to '/home/administrator/.ansible/collections/ansible_collections/arubanetworks/aoscx'
+    ```
+    The requirements.txt file is located in the collection path. Based on the previous example, the command to install all Python3 requirements
+    is as follows:
+    ```
+    python3 -m pip  install -r /home/administrator/.ansible/collections/ansible_collections/arubanetworks/aoscx/requirements.txt
+    ```
+* Install all Ansible requirements, with the following command:
+    ```
+    ansible-galaxy install -r <collection_path>/requirements.yml
+    ```    
   
 SSH/CLI Modules
 ---------------
@@ -70,13 +88,51 @@ The variables that should be defined in your inventory for your AOS-CX host are:
 * `ansible_user`: Username for switch in `plaintext` format  
 * `ansible_password`: Password for switch in `plaintext` format
 * `ansible_network_os`: Must always be set to `aoscx`
-* `ansible_connection`: Set to `httpapi` to use REST API modules, and to `network_cli` to use SSH/CLI modules
+* `ansible_connection`: Set to `httpapi` to use REST API modules, to `network_cli` to use SSH/CLI modules and to `aoscx` to use pyaoscx modules
+  * See [below](#pyaoscx-modules) for info on our new pyaoscx implementation of the AOS-CX Ansible modules that will be the standard moving forward
   * See [below](#using-both-rest-api-and-sshcli-modules-on-a-host) for info on using both REST API modules and SSH/CLI modules on a host
 * `ansible_httpapi_use_ssl`: (Only required for REST API modules) Must always be `True` as AOS-CX uses port 443 for REST
 * `ansible_httpapi_validate_certs`: (Only required for REST API modules) Set `True` or `False` depending on if Ansible should attempt to validate certificates
 * `ansible_acx_no_proxy`: Set to `True` or `False` depending if Ansible should bypass environment proxies to connect to AOS-CX
+* `ansible_aoscx_validate_certs`: Set to `True` or `False` depending if Ansible should bypass validating certificates to connect to AOS-CX. Only required when `ansible_connection` is set to `aoscx`
+* `ansible_aoscx_use_proxy`: Set to `True` or `False` depending if Ansible should bypass environment proxies to connect to AOS-CX. Only required when `ansible_connection` is set to `aoscx`.
+
+
+
+pyaoscx Modules
+---------------
+In an effort to make use of our recently updated Python SDK for AOS-CX [Pyaoscx](https://pypi.org/project/pyaoscx/) we've redesigned our Ansible integration by making use of pyaoscx for all REST-API based modules.   
+**What does this mean if I've been using Ansible with AOS-CX REST API modules?**   
+Our previous implementation will continue to function but will not be supported for future modules. That means you should and eventually have to update your [Ansible Inventory variables](https://github.com/aruba/aoscx-ansible-role#pyaoscx-modules-only) to specify the `ansible_network_os=aoscx` and additional variables as well as install the pyaoscx Python package using Python3 pip, **all playbooks will remain the same**:   
+`pip3 install pyaoscx`  
+The AOS-CX Ansible Role will automatically determine if you have pyaoscx installed and will use that method when the `ansible_network_os` is set to `aoscx`. If it's set to `httpapi` it will continue to use the previous implementation method.    
 
 ### Sample Inventories:
+
+#### pyaoscx Modules Only:
+
+##### INI
+
+```INI
+aoscx_1 ansible_host=10.0.0.1 ansible_user=admin ansible_password=password ansible_network_os=aoscx ansible_connection=aoscx ansible_aoscx_validate_certs=False ansible_aoscx_use_proxy=False
+```
+
+##### YAML
+
+```yaml
+all:
+  hosts:
+    aoscx_1:
+      ansible_host: 10.0.0.1
+      ansible_user: admin
+      ansible_password: password
+      ansible_network_os: aoscx
+      ansible_connection: aoscx  # REST API via pyaoscx connection method
+      ansible_aoscx_validate_certs: False
+      ansible_aoscx_use_proxy: False
+
+```
+
 
 #### REST API Modules Only:
 
@@ -133,32 +189,38 @@ If role installed through [Github](https://github.com/aruba/aoscx-ansible-role)
 set role to `aoscx-ansible-role`:
 
 ```yaml
--  hosts: all
-   roles:
+- hosts: all
+  roles:
     - role: aoscx-ansible-role
-   tasks:
-     - name: Create L3 Interface 1/1/3
-       aoscx_l3_interface:
-        interface: 1/1/3
-        description: Uplink_Interface
-        ipv4: ['10.20.1.3/24']
-        ipv6: ['2001:db8::1234/64']
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  gather_facts: False     
+  tasks:
+  - name: Create L3 Interface 1/1/3
+    aoscx_l3_interface:
+      interface: 1/1/3
+      description: Uplink_Interface
+      ipv4: ['10.20.1.3/24']
+      ipv6: ['2001:db8::1234/64']
 ```
 
 If role installed through [Galaxy](https://galaxy.ansible.com/arubanetworks/aoscx_role)
 set role to `arubanetworks.aoscx_role`:
 
 ```yaml
--  hosts: all
-   roles:
+- hosts: all
+  roles:
     - role: arubanetworks.aoscx_role
-   tasks:
-     - name: Create L3 Interface 1/1/3
-       aoscx_l3_interface:
-        interface: 1/1/3
-        description: Uplink_Interface
-        ipv4: ['10.20.1.3/24']
-        ipv6: ['2001:db8::1234/64']
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  gather_facts: False     
+  tasks:
+  - name: Create L3 Interface 1/1/3
+    aoscx_l3_interface:
+      interface: 1/1/3
+      description: Uplink_Interface
+      ipv4: ['10.20.1.3/24']
+      ipv6: ['2001:db8::1234/64']
 ```
 
 Using Both REST API and SSH/CLI Modules on a Host
@@ -203,17 +265,21 @@ sets the `ansible_connection` value accordingly):
 - hosts: all
   roles: 
     - role: arubanetworks.aoscx_role
+  vars:
+     ansible_python_interpreter: /usr/bin/python3
+  gather_facts: False     
   tasks:
-    - name: Adding or Updating Banner
-      aoscx_banner:
-        banner_type: banner
-        banner: "Hi!"
+  - name: Adding or Updating Banner
+    aoscx_banner:
+      banner_type: banner
+      banner: "Hi!"
 
 - hosts: all
   roles: 
     - role: arubanetworks.aoscx_role
   vars:
     ansible_connection: network_cli
+  gather_facts: False    
   tasks:
     - name: Execute show run on the switch
       aoscx_command:

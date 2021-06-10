@@ -1,5 +1,8 @@
-# 2.1.3
+# 3.0.0
+* Major implementation changes that make use of [pyaoscx](https://pypi.org/project/pyaoscx/)
+* New VSX module that utilized pyaoscx to configure VSX on AOS-CX switches
 
+# 2.1.3
 ## Notable Changes
 * Minor fix for static route module
 

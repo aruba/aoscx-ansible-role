@@ -239,7 +239,7 @@ class HttpApi:
         if not HAS_REQUESTS_LIB:
             self._module.fail_json(msg=missing_required_lib(
                 "requests"), exception=REQUESTS_IMP_ERR)
-
+        connection_details = self._connection.get_connection_details()
         full_url = connection_details['url'] + url
         with open(files, 'rb') as file:
             file_param = {'fileupload': file}
@@ -265,7 +265,7 @@ class HttpApi:
                     proxies=proxies,
                     cookies=response_login.cookies
                 )
-                # Perform Logout
+                # Perform Logout 
                 response_logout = requests.post(
                     connection_details['url'] + "/rest/v1/logout",
                     verify=False,proxies=proxies,
@@ -285,12 +285,12 @@ class HttpApi:
                     url=full_url, files=file_param, verify=False,
                     cookies=response_login.cookies
                 )
-                # Perform Logout
+                # Perform Logout 
                 response_logout = requests.post(
                     connection_details['url'] + "/rest/v1/logout",
                     verify=False,
                     cookies=response_login.cookies)
-
+    
         if res.status_code != 200:
             error_text = "Error while uploading firmware"
             raise ConnectionError(error_text, code=res.status_code)
