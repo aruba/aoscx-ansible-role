@@ -80,7 +80,7 @@ def main():
 
         from ansible.module_utils.aoscx_pyaoscx import Session
         from pyaoscx.session import Session as Pyaoscx_Session
-        from pyaoscx.pyaoscx_factory import PyaoscxFactory
+        from pyaoscx.device import Device
 
         USE_PYAOSCX_SDK = True
 
@@ -123,11 +123,9 @@ def main():
             session_info['url'],
             session_info['credentials'])
 
-        # Create a Pyaoscx Factory Object
-        pyaoscx_factory = PyaoscxFactory(s)
-
         # Create a Device Object
-        device = pyaoscx_factory.device()
+        device = Device(s)
+
         success = device.upload_firmware(
             partition_name=partition_name,
             firmware_file_path=firmware_file_path,

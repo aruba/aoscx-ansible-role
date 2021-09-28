@@ -148,7 +148,7 @@ def main():
     try:
         from ansible.module_utils.aoscx_pyaoscx import Session
         from pyaoscx.session import Session as Pyaoscx_Session
-        from pyaoscx.pyaoscx_factory import PyaoscxFactory
+        from pyaoscx.device import Device
 
         USE_PYAOSCX_SDK = True
 
@@ -189,12 +189,12 @@ def main():
         s = Pyaoscx_Session.from_session(
             session_info['s'], session_info['url'])
 
-        # Create a Pyaoscx Factory Object
-        pyaoscx_factory = PyaoscxFactory(s)
+        # Create a Device Object
+        device = Device(s)
 
         if state == 'delete':
             # Create Static Route Object
-            static_route = pyaoscx_factory.static_route(
+            static_route = device.static_route(
                 vrf_name, prefix)
             # Delete it
             static_route.delete()
@@ -203,7 +203,7 @@ def main():
 
         if state == 'create' or state == 'update':
             # Create Static Route object
-            static_route = pyaoscx_factory.static_route(
+            static_route = device.static_route(
                 vrf_name,
                 prefix
             )
