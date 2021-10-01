@@ -10,6 +10,7 @@ Requirements
 
 * Python 3 or later
 * Ansible 2.8.1 or later  
+  * Refer to [Ansible's documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for installation steps
   * Ansible 2.10+ requires `ansible.netcommon` collection to be installed  
 * Minimum supported AOS-CX firmware version 10.04.
 * Enable REST on your AOS-CX device with the following commands:
@@ -17,33 +18,55 @@ Requirements
     switch(config)# https-server rest access-mode read-write
     switch(config)# https-server vrf mgmt
     ```
+
+Installation
+------------
+
+Through Galaxy:
+```
+ansible-galaxy install arubanetworks.aoscx_role
+```
+
+Example Output:
+```
+Starting galaxy role install process
+- downloading role 'aoscx_role', owned by arubanetworks
+- downloading role from https://github.com/aruba/aoscx-ansible-role/archive/3.0.1.tar.gz
+- extracting arubanetworks.aoscx_role to /users/chiapuzi/.ansible/roles/arubanetworks.aoscx_role
+- arubanetworks.aoscx_role (3.0.1) was installed successfully
+ansible-control-machine$
+```
+
+* **Change into the roles directory** where the Ansible role was installed, execute `ansible-galaxy role list` to find:
+	```
+	ansible-control-machine$ansible-galaxy role list
+	# /users/chiapuzi/.ansible/roles
+	- arubanetworks.aoscx_role, 3.0.1
+	- arubanetworks.aruba_central_role, 0.1.0
+	[WARNING]: - the configured path /usr/share/ansible/roles does not exist.
+	[WARNING]: - the configured path /etc/ansible/roles does not exist.
+	ansible-control-machine$cd /users/chiapuzi/.ansible/roles/arubanetworks.aoscx_role/
+	ansible-control-machine$ls
+	cliconf_plugins     httpapi_plugins  README.md         terminal_plugins
+	connection_plugins  library          RELEASE-NOTES.md
+	CONTRIBUTING.md     meta             requirements.txt
+	docs                module_utils     requirements.yml
+	ansible-control-machine$
+	```
+
 * Install all Ansible requirements, with the following command:
     ```
     ansible-galaxy install -r requirements.yml
     ```
 * Install all Python requirements with the following command:
     ```
-    python3 -m pip install -r <collection_path>/requirements.txt
+    python3 -m pip install -r requirements.txt
     ```
-    
-  * After installing the collection using the `ansible-galaxy` command you'll find the path to the collection in the following output:
-    ```bash
-    ubuntu-vm: $ ansible-galaxy collection install ~/arubanetworks-aoscx-3.0.0.tar.gz -f
-    Process install dependency map
-    Starting collection install process
-    Skipping 'ansible.netcommon' as it is already installed
-    Installing 'arubanetworks.aoscx:3.0.0' to '/home/administrator/.ansible/collections/ansible_collections/arubanetworks/aoscx'
-    ```
-    The requirements.txt file is located in the collection path. Based on the previous example, the command to install all Python3 requirements
-    is as follows:
-    ```
-    python3 -m pip  install -r /home/administrator/.ansible/collections/ansible_collections/arubanetworks/aoscx/requirements.txt
-    ```
-* Install all Ansible requirements, with the following command:
-    ```
-    ansible-galaxy install -r <collection_path>/requirements.yml
-    ```    
-  
+* **Change back** into your working directory and begin automating!
+	```
+	ansible-control-machine$cd /users/chiapuzi/Desktop/sandbox/
+	```
+
 SSH/CLI Modules
 ---------------
 * To use the SSH/CLI modules `aoscx_config` and `aoscx_command`, SSH access must
@@ -64,20 +87,6 @@ SSH/CLI Modules
 	 is 30 secs` error, consider setting the environment variable 
 	`ANSIBLE_PERSISTENT_COMMAND_TIMEOUT` to a greater value. See Ansible documentation [here](https://docs.ansible.com/ansible/latest/network/user_guide/network_debug_troubleshooting.html).
 
-Installation
-------------
-
-Through Github, use the following command. Use option `-f` to overwrite current role version:
-
-```
-ansible-galaxy install git+https://github.com/aruba/aoscx-ansible-role.git
-```
-
-Through Galaxy:
-
-```
-ansible-galaxy install arubanetworks.aoscx_role
-```
 
 Inventory Variables
 -------------------
