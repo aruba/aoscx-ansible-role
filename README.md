@@ -118,7 +118,7 @@ The AOS-CX Ansible Role will automatically determine if you have pyaoscx install
 
 ### Sample Inventories:
 
-#### pyaoscx Modules Only:
+#### REST API Modules Only:
 
 ##### INI
 
@@ -139,11 +139,11 @@ all:
       ansible_connection: aoscx  # REST API via pyaoscx connection method
       ansible_aoscx_validate_certs: False
       ansible_aoscx_use_proxy: False
-
+      ansible_acx_no_proxy: True
 ```
 
 
-#### REST API Modules Only:
+#### Legacy REST API Modules:
 
 ##### INI
 
@@ -194,27 +194,7 @@ Example Playbooks
 
 ### Including the Role
 
-If role installed through [Github](https://github.com/aruba/aoscx-ansible-role)
-set role to `aoscx-ansible-role`:
-
-```yaml
-- hosts: all
-  roles:
-    - role: aoscx-ansible-role
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  gather_facts: False     
-  tasks:
-  - name: Create L3 Interface 1/1/3
-    aoscx_l3_interface:
-      interface: 1/1/3
-      description: Uplink_Interface
-      ipv4: ['10.20.1.3/24']
-      ipv6: ['2001:db8::1234/64']
-```
-
-If role installed through [Galaxy](https://galaxy.ansible.com/arubanetworks/aoscx_role)
-set role to `arubanetworks.aoscx_role`:
+If role installed through Galaxy add `arubanetworks.aoscx_role` to your list of roles:
 
 ```yaml
 - hosts: all
@@ -241,7 +221,7 @@ that each play uses either only REST API modules or only SSH/CLI modules.
 A play cannot mix and match REST API and SSH/CLI module calls.
 In each play, `ansible_connection` must possess the appropriate value 
 according to the modules used. 
-If the play uses REST API modules, the value should be `httpapi`. 
+If the play uses REST API modules, the value should be `aoscx`. 
 If the play uses SSH/CLI modules, the value should be `network_cli`.
  
 A recommended approach to successfully using both types of modules for a host
@@ -261,7 +241,7 @@ all:
       ansible_user: admin
       ansible_password: password
       ansible_network_os: aoscx
-      ansible_connection: httpapi  # REST API connection method
+      ansible_connection: aoscx  # REST API connection method
       ansible_httpapi_validate_certs: False
       ansible_httpapi_use_ssl: True
       ansible_acx_no_proxy: True
