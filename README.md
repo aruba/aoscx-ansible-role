@@ -54,14 +54,14 @@ ansible-control-machine$
 	ansible-control-machine$
 	```
 
-* Install all Ansible requirements, with the following command:
-    ```
-    ansible-galaxy install -r requirements.yml
-    ```
-* Install all Python requirements with the following command:
-    ```
-    python3 -m pip install -r requirements.txt
-    ```
+	* Install all Ansible requirements, with the following command:
+	    ```
+	    ansible-galaxy install -r requirements.yml
+	    ```
+	* Install all Python requirements with the following command:
+	    ```
+	    python3 -m pip install -r requirements.txt
+	    ```
 * **Change back** into your working directory and begin automating!
 	```
 	ansible-control-machine$cd /users/chiapuzi/Desktop/sandbox/
