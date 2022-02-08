@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# (C) Copyright 2019-2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -232,7 +232,7 @@ EXAMPLES = '''
         comment: "Deny the host"
         action: deny
         count: true
-        scr_ip: 158.10.12.57/255.255.255.255
+        src_ip: 158.10.12.57/255.255.255.255
         protocol: tcp
       2:
         comment: "Allow the network"
@@ -326,6 +326,24 @@ def translate_acl_entries_protocol(protocol_name):
     return None
 
 
+def _remove_invalid_addresses(parameters):
+    """
+    For user ease 'any' is accepted as an address, but for REST, to match any
+        address the field as to be empty.
+    """
+    param_names = [
+        "src_ip",
+        "dst_ip",
+        "src_mac",
+        "dst_mac",
+    ]
+    for name in param_names:
+        if name in parameters:
+            if parameters[name] == "any":
+                del(parameters[name])
+    return parameters
+
+
 def main():
     module_args = dict(
         name=dict(type='str', required=True),
@@ -380,7 +398,6 @@ def main():
         s = Pyaoscx_Session.from_session(
             session_info['s'], session_info['url'])
 
-        # Create a Device Object
         device = Device(s)
         if state == 'delete':
             # Create ACL Object
@@ -402,10 +419,13 @@ def main():
             modified_op = False
 
             if acl_entries is not None:
-                for sequence_number in acl_entries.keys():
+                for sequence_number, config in acl_entries.items():
                     acl_entry = AclEntry(
-                        acl.session, sequence_number=int(sequence_number),
-                        parent_acl=acl, **acl_entries[sequence_number])
+                        acl.session,
+                        sequence_number=int(sequence_number),
+                        parent_acl=acl,
+                        **_remove_invalid_addresses(config)
+                    )
                     modified_op |= acl_entry.apply()
 
             # Changed

@@ -88,11 +88,20 @@ description: This modules provides configuration management of Layer3 Interfaces
 - name: Create IP Helper Address on Interface 1/1/3
   aoscx_l3_interface:
     interface: 1/1/3
-    ip_helper_address: ['172.1.2.32']
+    ip_helper_address:
+      - '172.1.2.32'
 
 - name: Update IP Helper Address on Interface 1/1/3
   aoscx_l3_interface:
     interface: 1/1/3
-    ip_helper_address: ['172.1.5.44']
+    ip_helper_address:
+      - '172.1.5.44'
     state: update
+
+- name: Set a rate limit for the interface
+  aoscx_l3_interface:
+    interface: 1/1/2
+    interface_qos_rate:
+      broadcast: 200pps
+      multicast: 100kbps
 ```

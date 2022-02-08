@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# (C) Copyright 2019-2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -74,6 +74,7 @@ RETURN = r''' # '''
 from ansible.module_utils.aoscx_vlan import VLAN
 from ansible.module_utils.aoscx import ArubaAnsibleModule
 
+
 def main():
     module_args = dict(
         vlan_id=dict(type='int', required=True),
@@ -114,8 +115,6 @@ def main():
         if vlan_name is None:
             vlan_name = "VLAN{vlan_id}".format(vlan_id=vlan_id)
         description = ansible_module.params['description']
-        if description is None:
-            vlan_name = "vlan{vlan_id}".format(vlan_id=vlan_id)
         admin_state = ansible_module.params['admin_state']
         state = ansible_module.params['state']
 

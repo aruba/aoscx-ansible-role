@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# (C) Copyright 2019-2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -115,6 +115,7 @@ from ansible.module_utils.aoscx_port import Port
 from ansible.module_utils.aoscx_vlan import VLAN
 from ansible.module_utils.aoscx import ArubaAnsibleModule
 
+
 def main():
     module_args = dict(
         vlan_id=dict(type='str', required=True),
@@ -158,7 +159,7 @@ def main():
         ip_helper_address = ansible_module.params['ip_helper_address']  # NOQA
         active_gateway_ip = ansible_module.params['active_gateway_ip']
         active_gateway_mac_v4 = ansible_module.params['active_gateway_mac_v4']
-        state = ansible_module.params['state']\
+        state = ansible_module.params['state']
 
         # Set IP variable as empty arrays
         if ipv4 ==['']:

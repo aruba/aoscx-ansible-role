@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# (C) Copyright 2019-2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -261,21 +261,7 @@ def main():
             if prefix is not None:
                 static_route[index]["prefix"] = prefix
             if route_type is not None:
-                # Get version
-                firmware_version = aruba_ansible_module.switch_current_firmware
-                # Scheme change depending on version
-                if firmware_version < "10.05.0020":
-                    static_route[index]["type"] = route_type
-                else:
-                    static_route[index]["static_nexthops"] = {
-                        "0": {
-                            "type": route_type
-                        }
-                    }
-
-                    if distance is not None:
-                        static_route[index]["static_nexthops"]["0"]["distance"] = distance
-
+                static_route[index]["static_nexthops"]["0"]["type"] = route_type
                 if route_type == 'forward':
                     static_route[index]['static_nexthops'] = {
                         "0": {

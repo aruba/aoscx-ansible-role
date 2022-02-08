@@ -1,13 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# (C) Copyright 2019-2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from __future__ import (absolute_import, division, print_function)
-
 __metaclass__ = type
 
 
@@ -32,50 +31,51 @@ options:
       i.e. 1/2/3 , 1/1/32.
     type: str
     required: true
-  admin_state:
-    description: Admin State status of interface.
-    default: 'up'
-    choices: ['up', 'down']
-    required: false
-    type: str
   description:
     description: Description of interface.
     type: str
     required: false
   ipv4:
-    description: "The IPv4 address and subnet mask in the address/mask format.
+    description: >
+      "The IPv4 address and subnet mask in the address/mask format.
       The first entry in the list is the primary IPv4, the remainings are
       secondary IPv4. i.e. ['10.1.1.1/24', '10.2.1.3/255.255.254.0']  To remove
       an IP address pass in '' and set 'state: update'."
     type: list
     required: False
   ipv6:
-    description: "The IPv6 address and subnet mask in the address/mask format.
+    description: >
+      "The IPv6 address and subnet mask in the address/mask format.
       It takes multiple IPv6 with comma separated in the list.
       i.e. ['2000:cc92::2/64', '3000:820a::43/64']  To remove
       an IP address pass in '' and set state: update."
     type: list
     required: False
   vrf:
-    description: "The VRF the interface will belong to once created. If none
+    description: >
+      "The VRF the interface will belong to once created. If none
       provided, the interface will be in the Default VRF. If an L3 interface is
       created and the user wants to change the interface's VRF, the user must
       delete the L3 interface then recreate the interface in the desired VRF."
     type: str
     required: False
   interface_qos_schedule_profile:
-    description: Attaching existing QoS schedule profile to interface.
+    description: >
+      Attaching existing QoS schedule profile to interface. *This
+      parameter is deprecated and will be removed in a future version.
     type: dict
     required: False
   interface_qos_rate:
-    description: "The rate limit value configured for
+    description: >
+      "The rate limit value configured for
       broadcast/multicast/unknown unicast traffic. Dictionary should have the
       format ['type_of_traffic'] = speed i.e. {'unknown-unicast': 100pps,
       'broadcast': 200pps, 'multicast': 200pps}"
     type: dict
     required: False
   ip_helper_address:
-    description: "Configure a remote DHCP server/relay IP address on the device
+    description: >
+      "Configure a remote DHCP server/relay IP address on the device
       interface. Here the helper address is same as the DHCP server address or
       another intermediate DHCP relay."
     type: list
@@ -89,7 +89,23 @@ options:
 '''  # NOQA
 
 EXAMPLES = '''
-- name: Creating new L3 interface 1/1/3 with IPv4 and IPv6 address on VRF red
+- name: >
+    Configure Interface 1/1/3 - enable interface and vsx-sync features
+    IMPORTANT NOTE: the aoscx_interface module is needed to enable the
+    interface and set the VSX features to be synched
+  aoscx_interface:
+    name: 1/1/3
+    enabled: true
+    vsx_sync:
+      - acl
+      - irdp
+      - qos
+      - rate_limits
+      - vlan
+      - vsx_virtual
+- name: >
+    Creating new L3 interface 1/1/3 with IPv4 and IPv6 address on VRF red
+    IMPORTANT NOTE see the above task, it is needed to enable the interface
   aoscx_l3_interface:
     interface: 1/1/3
     description: Uplink Interface
@@ -121,59 +137,49 @@ EXAMPLES = '''
 
 RETURN = r''' # '''
 
-from ansible.module_utils.aoscx_interface import L3_Interface, Interface
-from ansible.module_utils.aoscx import ArubaAnsibleModule
+try:
+    from pyaoscx.device import Device
+    from ansible.module_utils.basic import AnsibleModule
+    from ansible.module_utils.aoscx_pyaoscx import get_pyaoscx_session
+    USE_PYAOSCX_SDK = True
+except ImportError:
+    from ansible.module_utils.aoscx import ArubaAnsibleModule
+    from ansible.module_utils.aoscx_interface import L3_Interface, Interface
+    USE_PYAOSCX_SDK = False
+
 
 def main():
     module_args = dict(
         interface=dict(type='str', required=True),
-        admin_state=dict(default='up', choices=['up', 'down']),
         description=dict(type='str', default=None),
         ipv4=dict(type='list', default=None),
         ipv6=dict(type='list', default=None),
-        interface_qos_rate=dict(type='dict', default=None),
         interface_qos_schedule_profile=dict(type='dict', default=None),
+        interface_qos_rate=dict(type='dict', default=None),
         vrf=dict(type='str', default=None),
         ip_helper_address=dict(type='list', default=None),
         state=dict(default='create', choices=['create', 'delete', 'update'])
     )
-    # Version management
-    try:
-        from ansible.module_utils.aoscx_pyaoscx import Session
-        from pyaoscx.session import Session as Pyaoscx_Session
-        from pyaoscx.device import Device
-
-        USE_PYAOSCX_SDK = True
-
-    except ImportError:
-
-        USE_PYAOSCX_SDK = False
 
     if USE_PYAOSCX_SDK:
-        from ansible.module_utils.basic import AnsibleModule
-        # ArubaModule
         ansible_module = AnsibleModule(
             argument_spec=module_args,
-            supports_check_mode=True)
+            supports_check_mode=True
+        )
 
         interface_name = ansible_module.params['interface']
-        admin_state = ansible_module.params['admin_state']
         description = ansible_module.params['description']
         ipv4 = ansible_module.params['ipv4']
         ipv6 = ansible_module.params['ipv6']
-        qos_rate = ansible_module.params['interface_qos_rate']
-        qos_profile_details = ansible_module.params['interface_qos_schedule_profile']
         vrf = ansible_module.params['vrf']
         ip_helper_addresses = ansible_module.params['ip_helper_address']
         state = ansible_module.params['state']
+
         # Set IP variable as empty arrays
         if ipv4 ==['']:
             ipv4 = []
         if ipv6 == ['']:
             ipv6 = []
-
-        # Session
-        session = Session(ansible_module)
 
         # Set Variables
         if vrf is None:
@@ -187,15 +193,8 @@ def main():
         if ansible_module.check_mode:
             ansible_module.exit_json(**result)
 
-        # Get session serialized information
-        session_info = session.get_session()
-        # Create pyaoscx.session object
-        s = Pyaoscx_Session.from_session(
-            session_info['s'], session_info['url'])
-
-        # Create a Device Object
-        device = Device(s)
-
+        session = get_pyaoscx_session(ansible_module)
+        device = Device(session)
         if state == 'delete':
             # Create Interface Object
             interface = device.interface(interface_name)
@@ -204,8 +203,7 @@ def main():
 
             # Changed
             result['changed'] = True
-
-        if state == 'create' or state == 'update':
+        else:
             # Create Interface Object
             interface = device.interface(interface_name)
             # Verify if interface was create
@@ -218,18 +216,8 @@ def main():
                 ipv4=ipv4,
                 ipv6=ipv6,
                 vrf=vrf,
-                description=description,
-                admin=admin_state)
-
-            if qos_profile_details is not None:
-                modified_op2 = interface.update_interface_qos_profile(
-                    qos_profile_details)
-                modified_op = modified_op2 or modified_op
-
-            if qos_rate is not None:
-                modified_op3 = interface.update_interface_qos_rate(
-                    qos_rate)
-                modified_op = modified_op3 or modified_op
+                description=description
+            )
 
             if ip_helper_addresses is not None:
                 # Create DHCP_Relay object
